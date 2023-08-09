@@ -2,11 +2,13 @@ package com.crking7.datn.mapper;
 
 import com.crking7.datn.models.Article;
 import com.crking7.datn.models.ArticleImage;
+import com.crking7.datn.models.Category;
 import com.crking7.datn.web.dto.request.ArticleRequest;
+import com.crking7.datn.web.dto.request.ArticleUDRequest;
+import com.crking7.datn.web.dto.request.CategoryRequest;
 import com.crking7.datn.web.dto.response.ArticleImageResponse;
 import com.crking7.datn.web.dto.response.ArticleResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 @Mapper
 public interface ArticleMapper {
@@ -20,4 +22,8 @@ public interface ArticleMapper {
     @Mapping(target = "category.id", source = "categoryId")
     @Mapping(target = "user.id", source = "userId")
     Article mapRequestToModel(ArticleRequest articleRequest);
+
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateModel(@MappingTarget Article article, ArticleUDRequest articleRequest);
 }

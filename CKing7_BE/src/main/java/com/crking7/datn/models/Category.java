@@ -48,6 +48,10 @@
 		@JsonBackReference
 		private Category parentCategory;
 
+		@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+		@JsonManagedReference
+		private List<Article> articles = new ArrayList<>();
+
 		@OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 		@JsonManagedReference
 		private List<Category> childCategories = new ArrayList<>();

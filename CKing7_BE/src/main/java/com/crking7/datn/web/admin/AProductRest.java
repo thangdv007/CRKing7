@@ -2,6 +2,7 @@ package com.crking7.datn.web.admin;
 
 import com.crking7.datn.services.ProductService;
 import com.crking7.datn.web.dto.request.ProductRequest;
+import com.crking7.datn.web.dto.request.ProductUDRequest;
 import com.crking7.datn.web.dto.response.ProductResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +31,10 @@ public class AProductRest {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
     }
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("id") long id,
-                                            @RequestBody ProductRequest productRequest){
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProduct(@RequestBody ProductUDRequest productRequest){
         try{
-            ProductResponse productResponse = productService.updateProduct(id, productRequest);
+            ProductResponse productResponse = productService.updateProduct(productRequest);
             if (productResponse == null) {
                 return new ResponseEntity<>("Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND);
             }
@@ -51,9 +51,22 @@ public class AProductRest {
             if (productResponse == null) {
                 return new ResponseEntity<>("Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND);
             }
-            return new ResponseEntity<>("Danh mục đã được ẩn", HttpStatus.OK);
+            return new ResponseEntity<>("Sản phẩm đã được ẩn", HttpStatus.OK);
         }catch (Exception e){
             String errorMessage = "Không thể ẩn sản phẩm, lỗi: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+    }
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showProduct(@PathVariable("id") long id){
+        try{
+            ProductResponse productResponse = productService.showProduct(id);
+            if (productResponse == null) {
+                return new ResponseEntity<>("Không tìm thấy sản phẩm", HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>("Sản phẩm đã được hiện ", HttpStatus.OK);
+        }catch (Exception e){
+            String errorMessage = "Không thể hiện sản phẩm, lỗi: " + e.getMessage();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
     }
@@ -61,9 +74,10 @@ public class AProductRest {
     public ResponseEntity<?> deleteProduct(@PathVariable(name = "id") long id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.ok("Xóa danh mục thành công!");
+            return ResponseEntity.ok("Xóa sản phẩm thành công!");
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xóa danh mục không thành công! Lỗi " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xóa sản phẩm không thành công! Lỗi " + e.getMessage());
         }
     }
+
 }

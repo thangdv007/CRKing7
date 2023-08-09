@@ -42,7 +42,7 @@ public class OrdersServiceImpl implements OrdersService {
     @Transactional
     public OrdersResponse getOrderByType(long userId, int type) {
         if (type != 0 && type != 1){
-            type = 0;
+            type = 1;
         }
         User user = userRepository.findById(userId).orElseThrow();
         Orders orders = ordersRepository.findByUserAndType(user, type);
@@ -60,11 +60,7 @@ public class OrdersServiceImpl implements OrdersService {
         }else {
             Color color = size.getColor();
             Product product = color.getProduct();
-            if (product.getSalePrice() != 0) {
-                orderItemRequest.setSellPrice(product.getSalePrice());
-            } else {
-                orderItemRequest.setSellPrice(product.getPrice());
-            }
+            orderItemRequest.setSellPrice(product.getSalePrice());
 
             OrderItem orderItem = orderItemMapper.mapToModel(orderItemRequest);
             if (checkOrders == null) {

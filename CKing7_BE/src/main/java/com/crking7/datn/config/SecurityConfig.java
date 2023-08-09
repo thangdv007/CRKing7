@@ -25,45 +25,51 @@ public class SecurityConfig {
     private CustomUserDetailsService userDetailsService;
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
     private CorsConfig corsConfig;
+
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
         return new JwtAuthenticationFilter();
     }
+
     @Bean
-    BCryptPasswordEncoder passwordEncoder(){
+    BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors().and()
-        		.csrf().disable()
-                    .exceptionHandling()
-                    .authenticationEntryPoint(authenticationEntryPoint)
+                .csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
-                    .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                    .requestMatchers("/api/register").permitAll()
-                    .requestMatchers("/api/login").permitAll()
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/category/**").permitAll()
-                    .requestMatchers("/api/product/**").permitAll()
-                    .requestMatchers("/api/banner/**").permitAll()
-                    .requestMatchers("/api/article/**").permitAll()
-                    .requestMatchers("/api/company/**").permitAll()
-                    .requestMatchers("/api/user/**").permitAll()
-                    .requestMatchers("/api/cart/**").permitAll()
-                    .requestMatchers("/error").permitAll()
-                    .anyRequest().authenticated();
+                .requestMatchers("/api/register").permitAll()
+                .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/category/**").permitAll()
+                .requestMatchers("/api/product/**").permitAll()
+                .requestMatchers("/api/banner/**").permitAll()
+                .requestMatchers("/api/article/**").permitAll()
+                .requestMatchers("/api/company/**").permitAll()
+                .requestMatchers("/api/user/**").permitAll()
+                .requestMatchers("/api/cart/**").permitAll()
+                .requestMatchers("/api/size/**").permitAll()
+                .requestMatchers("/api/color/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated();
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
     protected void filterChain(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService((userDetailsService)).passwordEncoder((passwordEncoder()));
     }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

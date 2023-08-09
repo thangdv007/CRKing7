@@ -4,6 +4,7 @@ import javax.swing.plaf.PanelUI;
 
 public class Constants {
     public static final int ACTIVE_STATUS = 1;
+    public static final int INACTIVE_STATUS = 0;
     public static final int PRODUCT_TYPE = 0;
     public static final int POLICY_TYPE = 1;
     public static final int ARTICLE_TYPE = 2;

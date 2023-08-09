@@ -5,7 +5,9 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ProductRequest {
+public class ProductUDRequest {
+    private long id;
+
     private String name;
 
     private String description;
@@ -18,7 +20,7 @@ public class ProductRequest {
 
     private Long userId;
 
-    private List<ColorRequest> colors;
+    private List<ColorUDRequest> colors;
 
-    private List<ProductImageRequest> images;
+    private List<ProductImageUDRequest> images;
 }

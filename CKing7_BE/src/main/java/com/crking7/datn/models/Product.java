@@ -2,6 +2,7 @@ package com.crking7.datn.models;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -60,9 +61,17 @@ public class Product {
 	@JoinColumn(name = "product_category_id")
 	private Category productCategory;
 
-	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ManyToOne
+	@JoinColumn(name = "sale_id")
+	private Sale sale;
+
+	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Color> colors = new ArrayList<>();
 
 	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<ProductImage> productImages = new ArrayList<>();
+
+	@OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Notification> notifications = new ArrayList<>();
 }

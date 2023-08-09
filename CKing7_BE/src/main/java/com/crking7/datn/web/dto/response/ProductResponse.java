@@ -17,6 +17,8 @@ public class ProductResponse {
 
     private String material;
 
+    private int visited;
+
     private int price;
 
     private int salePrice;
@@ -30,6 +32,8 @@ public class ProductResponse {
     private long author;
 
     private long category;
+
+    private long sale;
 
     private List<ColorResponse> colors;
 
