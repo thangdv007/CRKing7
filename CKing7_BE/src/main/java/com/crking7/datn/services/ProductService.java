@@ -42,4 +42,8 @@ public interface ProductService {
     List<ProductResponse> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy);
 
     List<ProductResponse> getRelatedProducts(Long categoryId, int limit);
+
+    List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy);
+
+    List<ProductResponse> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy);
 }

@@ -378,7 +378,6 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.mapModelToResponse(product);
     }
 
-
     @Override
     public ProductResponse hideProduct(long id) {
         Product product = productRepository.findById(id).orElseThrow();
@@ -447,6 +446,32 @@ public class ProductServiceImpl implements ProductService {
             }
             return products.stream()
                     .map(product -> productMapper.mapModelToResponse(product))
+                    .toList();
+        }
+    }
+
+    @Override
+    public List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getBestSellerProducts(pageable);
+        if (products.isEmpty()) {
+            return null;
+        } else {
+            return products.getContent().stream()
+                    .map(productMapper::mapModelToResponse)
+                    .toList();
+        }
+    }
+
+    @Override
+    public List<ProductResponse> getProductByQuantity(boolean isActive,int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getProductByQuantity(isActive , pageable);
+        if (products.isEmpty()) {
+            return null;
+        } else {
+            return products.getContent().stream()
+                    .map(productMapper::mapModelToResponse)
                     .toList();
         }
     }

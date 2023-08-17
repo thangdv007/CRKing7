@@ -15,6 +15,8 @@ public class UserResponse {
 
     private String email;
 
+    private String otp;
+
     private String firstName;
 
     private String lastName;
@@ -28,4 +30,5 @@ public class UserResponse {
     private int status;
 
     private List<AddressResponse> addresses;
+
 }

@@ -9,6 +9,6 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface OrderItemMapper {
     OrderItemResponse mapToResponse(OrderItem orderItem);
-    @Mapping(target = "size.id", source = "sizeId")
+
     OrderItem mapToModel(OrderItemRequest orderItemRequest);
 }

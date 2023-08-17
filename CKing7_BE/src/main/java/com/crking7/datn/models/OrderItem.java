@@ -1,5 +1,6 @@
 package com.crking7.datn.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,11 +25,16 @@ public class OrderItem {
     @Column
     private int sellPrice;
 
+    @Column
+    private String productName;
+
+    @Column
+    private String valueColor;
+
+    @Column
+    private String valueSize;
+
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Orders orders;
-
-    @ManyToOne
-    @JoinColumn(name = "size_id")
-    private Size size;
 }

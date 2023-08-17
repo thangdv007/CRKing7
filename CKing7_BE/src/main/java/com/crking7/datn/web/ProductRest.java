@@ -1,13 +1,18 @@
 package com.crking7.datn.web;
 
+import com.crking7.datn.helper.ApiResponse;
+import com.crking7.datn.helper.ApiResponsePage;
 import com.crking7.datn.models.Product;
 import com.crking7.datn.services.ProductService;
+import com.crking7.datn.web.dto.response.CategoryResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,9 +34,15 @@ public class ProductRest {
                                          @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
         try {
             List<ProductResponse> productResponses = productService.getProducts(pageNo, pageSize, sortBy);
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Sản phẩm đang được thêm vào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -46,10 +57,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getProductsByCategory(categoryId, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào trong danh mục này!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -62,10 +78,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getProductsByKeyword(keyword, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -91,9 +112,13 @@ public class ProductRest {
     public ResponseEntity<?> getProduct(@PathVariable("id") Long productId) {
         try {
             ProductResponse productResponse = productService.getProduct(productId);
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponse, "Sản phẩm không tồn tại!"));
+            if (productResponse == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", productResponse), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return null;
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -101,9 +126,13 @@ public class ProductRest {
     private ResponseEntity<?> getProductBySize(@PathVariable("id") long sizeId) {
         try {
             ProductResponse productResponse = productService.getProductBySize(sizeId);
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponse, "Sản phẩm không tồn tại!"));
+            if (productResponse == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", productResponse), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -115,10 +144,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getProductsByValueSize(valueSize, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -130,10 +164,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getProductsByValueColor(valueColor, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -146,10 +185,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getProductsByPrice(minPrice, maxPrice, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -165,10 +209,15 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.searchProduct(valueSize, valueColor, minPrice, maxPrice, categoryId, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -179,21 +228,60 @@ public class ProductRest {
                                                @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
         try {
             List<ProductResponse> productResponses = productService.getProductBySaleId(saleId, pageNo, pageSize, sortBy);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            int total = productResponses.size();
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi! :" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @GetMapping("/relatedProducts/{id}")
     public ResponseEntity<?> getRelatedProducts(@PathVariable("id") Long categoryId) {
 
         try {
             List<ProductResponse> productResponses = productService.getRelatedProducts(categoryId, 10);
-
-            return ResponseEntity.ok(Objects.requireNonNullElse(productResponses, "Không có sản phẩm nào!"));
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/bestSeller")
+    public ResponseEntity<?> getOrder(@RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                      @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                      @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+
+        try {
+            List<ProductResponse> productResponses = productService.getBestSellerProducts(pageNo, pageSize, sortBy);
+
+            int total = productResponses.size();
+            HttpStatus responseStatus = HttpStatus.OK;
+            String message = "Lấy danh sách thành công";
+            List<Object> data = new ArrayList<>(productResponses);
+
+            if (productResponses.isEmpty()) {
+                responseStatus = HttpStatus.NO_CONTENT;
+                message = "Không có dữ liệu";
+                data = null;
+            }
+
+            return ResponseEntity
+                    .status(responseStatus)
+                    .body(ApiResponsePage.build(responseStatus.value(), true, pageNo, pageSize, total, message, data));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponsePage.builder(500, false, e.getMessage(), null));
         }
 
     }

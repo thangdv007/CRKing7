@@ -1,5 +1,8 @@
 package com.crking7.datn.web;
 
+import com.crking7.datn.helper.ApiResponse;
+import com.crking7.datn.models.User;
+import com.crking7.datn.web.dto.request.ForgotPassRequest;
 import com.crking7.datn.web.dto.request.LoginRequest;
 import com.crking7.datn.web.dto.request.PasswordRequest;
 import com.crking7.datn.web.dto.request.RegisterRequest;
@@ -59,24 +62,45 @@ public class AccountRest {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest){
         try {
-            UserResponse userResponse = userService.registerUser(registerRequest);
+            Object userResponse = userService.registerUser(registerRequest);
             if (userResponse != null) {
-                return ResponseEntity.ok(userResponse);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponse), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Tên tài khoản đã tồn tại!", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("Đăng ký không thành công", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-            return new ResponseEntity<>("Email hoặc số điện thoại đã được sử dụng.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/changePassword/{id}")
     public ResponseEntity<?> changePassword(@PathVariable(name = "id") Long userId,
                                             @RequestBody PasswordRequest passwordRequest){
-        UserResponse userResponse = userService.changePassword(userId,passwordRequest);
-        if(userResponse != null){
-            return ResponseEntity.ok(userResponse);
+        try {
+            String changePasswordResult = userService.changePassword(userId, passwordRequest);
+            if (changePasswordResult.equals("Thay đổi mật khẩu thành công")) {
+                return new ResponseEntity<>(ApiResponse.build(200, true, changePasswordResult, changePasswordResult), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thay đổi mật khẩu không thành công", changePasswordResult), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("Thay đổi mật khẩu không thành công", HttpStatus.BAD_REQUEST);
+    }
+    @PutMapping("/generate-otp")
+    public ResponseEntity<?> regenerateOtp(@RequestBody RegisterRequest registerRequest) {
+        try {
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userService.generateOtp(registerRequest)), HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("user/forgotPass")
+    public ResponseEntity<?> forgotPassword(@RequestParam String username) {
+        try {
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userService.forgotPassword(username)), HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

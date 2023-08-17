@@ -27,7 +27,7 @@ public class Notification {
     private Boolean deliverStatus;
 
     @Column
-    private int type;
+    private int type;//thông báo đặt hàng 1, 2 thông báo huỷ đơn hàng, 3 thông báo hết sản phẩm
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")

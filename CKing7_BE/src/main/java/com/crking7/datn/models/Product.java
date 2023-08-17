@@ -14,9 +14,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 @Entity
-@Table(name = "product")
+
+@Table(name = "product",uniqueConstraints = { @UniqueConstraint(columnNames = { "name" }) })
+
 public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

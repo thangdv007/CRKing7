@@ -33,7 +33,4 @@ public class Size {
 	@ManyToOne()
 	@JoinColumn(name="color_id")
 	private Color color;
-
-	@OneToMany(mappedBy = "size")
-	private List<OrderItem> orderItems = new ArrayList<>();
 }

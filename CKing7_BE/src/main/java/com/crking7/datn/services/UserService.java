@@ -13,10 +13,10 @@ public interface UserService {
     Page<UserResponse> getAllUsers(int pageNumber, int pageSize, String sortBy);
     UserResponse findByUserName(String username);
     UserResponse getUser(long userId);
-    UserResponse registerUser(RegisterRequest registerRequest);
+    Object registerUser(RegisterRequest registerRequest);
     UserResponse updateUser(Long userId, UserRequest userRequest);
-
-    UserResponse changePassword(Long userId, PasswordRequest passwordRequest);
-
+    String changePassword(Long userId, PasswordRequest passwordRequest);
+    String forgotPassword(String username);
+    String generateOtp (RegisterRequest registerRequest);
 
 }

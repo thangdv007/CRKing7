@@ -7,5 +7,7 @@ public class OrderItemResponse {
     private long id;
     private int quantity;
     private int sellPrice;
-    private ProductResponse product;
+    private String productName;
+    private String valueColor;
+    private String valueSize;
 }

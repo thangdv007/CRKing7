@@ -19,6 +19,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Product findByIdAndStatus(long productId, int status);
 
+    Product findByName(String name);
+
+
     Page<Product> findAllByProductCategoryAndStatus(Pageable pageable, Category category, int status);
 
     @Query("select max(p.id) from Product p")
@@ -81,4 +84,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "select * from product where product_category_id = :categoryId order by rand() limit :limit", nativeQuery = true)
     List<Product> findRelatedProducts(Long categoryId, int limit);
+
+    @Query("select p from Product p " +
+            "join p.productCategory ca " +
+            "join p.colors c " +
+            "join c.sizes s " +
+            "group by p " +
+            "order by s.sold desc")
+    Page<Product> getBestSellerProducts(Pageable pageable);
+
+    @Query("SELECT p " +
+            "FROM Product p " +
+            "JOIN p.colors c " +
+            "JOIN c.sizes s " +
+            "WHERE (:isActive = true AND s.total > 0) OR (:isActive = false AND s.total = 0)")
+    Page<Product> getProductByQuantity(@Param("isActive") boolean isActive, Pageable pageable);
 }
