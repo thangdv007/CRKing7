@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface SidebarItemProps {
   active?: boolean;
   icon: string;

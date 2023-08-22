@@ -79,13 +79,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProduct(long productId) {
         Product product = productRepository.findByIdAndStatus(productId, Constants.ACTIVE_STATUS);
-        if (product != null) {
-            product.setVisited(product.getVisited() + 1);
-            productRepository.save(product);
-            return productMapper.mapModelToResponse(product);
-        } else {
-            return null;
-        }
+        product.setVisited(product.getVisited() + 1);
+        productRepository.save(product);
+        return productMapper.mapModelToResponse(product);
+    }
+
+    @Override
+    public ProductResponse getProductAdmin(long productId) {
+        Product product = productRepository.findById(productId).orElseThrow();
+        return productMapper.mapModelToResponse(product);
     }
 
     @Override
@@ -108,13 +110,10 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
         Page<Product> products = productRepository.searchAllByKeyword(keyword, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
-        }
+        return products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+
     }
 
     @Override
@@ -167,6 +166,15 @@ public class ProductServiceImpl implements ProductService {
                     .map(productMapper::mapModelToResponse)
                     .toList();
         }
+    }
+
+    @Override
+    public List<ProductResponse> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getAllByKeyword(keyword, pageable);
+        return products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
     }
 
     @Override
@@ -464,9 +472,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProductByQuantity(boolean isActive,int pageNo, int pageSize, String sortBy) {
+    public List<ProductResponse> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.getProductByQuantity(isActive , pageable);
+        Page<Product> products = productRepository.getProductByQuantity(isActive, pageable);
         if (products.isEmpty()) {
             return null;
         } else {

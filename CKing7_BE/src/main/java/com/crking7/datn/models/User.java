@@ -44,9 +44,6 @@ public class User {
     private String phone;
 
     @Column
-    private String image;
-
-    @Column
     private Date createdDate;
 
     @Column

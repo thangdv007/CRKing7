@@ -1,5 +1,7 @@
 package com.crking7.datn.web.admin;
 
+import com.crking7.datn.helper.ApiResponse;
+import com.crking7.datn.helper.ApiResponsePage;
 import com.crking7.datn.models.Product;
 import com.crking7.datn.services.ArticleService;
 import com.crking7.datn.services.SaleService;
@@ -8,11 +10,13 @@ import com.crking7.datn.web.dto.request.BannerRequest;
 import com.crking7.datn.web.dto.request.SaleRequest;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.web.dto.response.BannerResponse;
+import com.crking7.datn.web.dto.response.CategoryResponse;
 import com.crking7.datn.web.dto.response.SaleResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -24,11 +28,29 @@ public class ASaleRest {
         this.saleService = saleService;
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getSale(@PathVariable(name = "id") Long id) {
+        try {
+            SaleResponse saleResponse = saleService.getSale(id);
+            if (saleResponse != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
+        }
+    }
     @PostMapping("/create")
     public ResponseEntity<?> createSale(@RequestBody SaleRequest saleRequest){
         try {
             SaleResponse saleResponse = saleService.create(saleRequest);
-            return ResponseEntity.ok(saleResponse);
+            if (saleResponse != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -39,10 +61,13 @@ public class ASaleRest {
                                         @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
         try {
             List<SaleResponse> saleResponses = saleService.getAll(pageNo, pageSize, sortBy);
-            if (saleResponses != null && !saleResponses.isEmpty()) {
-                return ResponseEntity.ok(saleResponses);
+            if (saleResponses != null) {
+                int total = saleResponses.size();
+                List<Object> data = new ArrayList<>(saleResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return ResponseEntity.ok("Sale đang được cập nhật!");
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(201, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -54,7 +79,11 @@ public class ASaleRest {
                                           @RequestBody SaleRequest saleRequest){
         try{
             SaleResponse saleResponse = saleService.update(id, saleRequest);
-            return ResponseEntity.ok(saleResponse);
+            if (saleResponse != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }

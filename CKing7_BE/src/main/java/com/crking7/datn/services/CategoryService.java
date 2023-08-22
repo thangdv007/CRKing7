@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface CategoryService {
     List<CategoryResponse> getCategories(int pageNo, int pageSize, String sortBy);
+    List<CategoryResponse> getAllCategory(int pageNo, int pageSize, String sortBy);
     List<CategoryResponse> getCategoriesByType(int type);
     CategoryResponse getCategoryById (long id);
     CategoryResponse createCategory(CategoryRequest categoryRequest);

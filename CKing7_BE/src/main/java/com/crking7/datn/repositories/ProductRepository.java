@@ -27,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("select max(p.id) from Product p")
     Long findNewestId();
 
-    @Query("select p from Product p where p.name like %:keyword% or p.description like %:keyword% and p.status = 1")
+    @Query("select p from Product p where (:keyword is null or p.name like %:keyword% or p.description like %:keyword%) and p.status = 1")
     Page<Product> searchAllByKeyword(@Param("keyword") String keyword,
                                      Pageable pageable);
 
@@ -72,11 +72,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "and (:minPrice is null or p.price >= :minPrice) " +
             "and (:maxPrice is null or p.price <= :maxPrice)")
     Page<Product> searchProductInCategory(@Param("valueSize") String valueSize,
-                                            @Param("valueColor") String valueColor,
-                                            @Param("minPrice") Integer minPrice,
-                                            @Param("maxPrice") Integer maxPrice,
-                                            @Param("categoryId") long categoryId,
-                                            Pageable pageable);
+                                          @Param("valueColor") String valueColor,
+                                          @Param("minPrice") Integer minPrice,
+                                          @Param("maxPrice") Integer maxPrice,
+                                          @Param("categoryId") long categoryId,
+                                          Pageable pageable);
+
+    @Query("select p from Product p where (:keyword is null or p.name like %:keyword% or p.description like %:keyword%)")
+    Page<Product> getAllByKeyword(@Param("keyword") String keyword,
+                                  Pageable pageable);
 
     List<Product> findBySaleId(Long id);
 

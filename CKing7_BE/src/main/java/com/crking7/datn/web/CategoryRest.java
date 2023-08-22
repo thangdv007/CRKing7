@@ -33,7 +33,7 @@ public class CategoryRest {
                 List<Object> data = new ArrayList<>(categoryResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -44,7 +44,7 @@ public class CategoryRest {
         try {
             CategoryResponse categoryResponse = categoryService.getCategoryById(id);
             if(categoryResponse == null){
-                return new ResponseEntity<>(ApiResponse.build(201, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
             }else{
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", categoryResponse), HttpStatus.OK);
             }
@@ -60,7 +60,7 @@ public class CategoryRest {
                 List<Object> data = new ArrayList<>(categoryResponses);
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
             }
         }catch (Exception e) {
             return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -46,6 +46,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryResponse> getAllCategory(int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Category> categories  = categoryRepository.findAll(pageable);
+        if (!categories.isEmpty()){
+            return categories.stream()
+                    .map(categoryMapper::mapModelToResponse)
+                    .toList();
+        }else {
+            return null;
+        }
+    }
+
+    @Override
     public List<CategoryResponse> getCategoriesByType(int type) {
         List<Category> categories;
         if (type != -1) {

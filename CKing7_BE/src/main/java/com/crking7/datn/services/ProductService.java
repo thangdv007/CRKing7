@@ -12,9 +12,9 @@ public interface ProductService {
      *
      */
     List<ProductResponse> getProducts(int pageNo, int pageSize, String sortBy);
-
+    List<ProductResponse> getAllProducts (String keyword, int pageNo, int pageSize, String sortBy);
     ProductResponse getProduct(long productId);
-
+    ProductResponse getProductAdmin(long productId);
     ProductResponse getProductBySize(long sizeId);
 
     List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy);

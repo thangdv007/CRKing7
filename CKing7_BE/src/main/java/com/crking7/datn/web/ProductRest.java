@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,11 +36,11 @@ public class ProductRest {
         try {
             List<ProductResponse> productResponses = productService.getProducts(pageNo, pageSize, sortBy);
             int total = productResponses.size();
-            if (productResponses != null && !productResponses.isEmpty()) {
+            if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -58,11 +59,11 @@ public class ProductRest {
         try {
             List<ProductResponse> productResponses = productService.getProductsByCategory(categoryId, pageNo, pageSize, sortBy);
             int total = productResponses.size();
-            if (productResponses != null && !productResponses.isEmpty()) {
+            if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -71,7 +72,7 @@ public class ProductRest {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> getProductByName(@RequestParam String keyword,
+    public ResponseEntity<?> getProductByName(@RequestParam(required = false) String keyword,
                                               @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
                                               @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                               @RequestParam(value = "sortBy", defaultValue = "name") String sortBy) {
@@ -79,11 +80,11 @@ public class ProductRest {
         try {
             List<ProductResponse> productResponses = productService.getProductsByKeyword(keyword, pageNo, pageSize, sortBy);
             int total = productResponses.size();
-            if (productResponses != null && !productResponses.isEmpty()) {
+            if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", Collections.singletonList("Không có sản phẩm nào trùng khớp")), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -113,9 +114,9 @@ public class ProductRest {
         try {
             ProductResponse productResponse = productService.getProduct(productId);
             if (productResponse == null) {
-                return new ResponseEntity<>(ApiResponse.build(201, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", productResponse), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", productResponse), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -127,7 +128,7 @@ public class ProductRest {
         try {
             ProductResponse productResponse = productService.getProductBySize(sizeId);
             if (productResponse == null) {
-                return new ResponseEntity<>(ApiResponse.build(201, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", productResponse), HttpStatus.OK);
             }
@@ -149,10 +150,10 @@ public class ProductRest {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -165,14 +166,14 @@ public class ProductRest {
         try {
             List<ProductResponse> productResponses = productService.getProductsByValueColor(valueColor, pageNo, pageSize, sortBy);
             int total = productResponses.size();
-            if (productResponses != null && !productResponses.isEmpty()) {
+            if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -190,10 +191,10 @@ public class ProductRest {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -214,10 +215,10 @@ public class ProductRest {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -233,10 +234,10 @@ public class ProductRest {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -249,10 +250,10 @@ public class ProductRest {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(ApiResponse.build(404, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -265,19 +266,12 @@ public class ProductRest {
             List<ProductResponse> productResponses = productService.getBestSellerProducts(pageNo, pageSize, sortBy);
 
             int total = productResponses.size();
-            HttpStatus responseStatus = HttpStatus.OK;
-            String message = "Lấy danh sách thành công";
-            List<Object> data = new ArrayList<>(productResponses);
-
-            if (productResponses.isEmpty()) {
-                responseStatus = HttpStatus.NO_CONTENT;
-                message = "Không có dữ liệu";
-                data = null;
+            if (!productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
-
-            return ResponseEntity
-                    .status(responseStatus)
-                    .body(ApiResponsePage.build(responseStatus.value(), true, pageNo, pageSize, total, message, data));
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)

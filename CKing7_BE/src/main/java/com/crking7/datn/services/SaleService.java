@@ -8,6 +8,7 @@ import com.crking7.datn.web.dto.response.SaleResponse;
 import java.util.List;
 
 public interface SaleService {
+    SaleResponse getSale(Long id);
     SaleResponse create(SaleRequest saleRequest);
     SaleResponse update(long id, SaleRequest saleRequest);
     List<SaleResponse> getAll(int pageNo, int pageSize, String sortBy);

@@ -34,6 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // get JWT(token) from http request
         String token = this.getJWTFromRequest(request);
 
+        // Check if logout endpoint is called
+        if (request.getRequestURI().equals("/api/logout")) {
+            if (StringUtils.hasText(token)) {
+                jwtConfig.addToBlacklist(token); // Add token to the blacklist
+            }
+            response.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
         // validate token
         if (StringUtils.hasText(token) && jwtConfig.validateToken(token)){
             // get username from token

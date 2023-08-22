@@ -1,45 +1,47 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ThemeAction from './redux/actions/ThemeAction';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/user/login';
+import Layout from './pages/layout';
+import 'react-toastify/dist/ReactToastify.css';
+import Types from './redux/types';
+import { ToastContainer } from 'react-toastify';
 import { RootState } from './redux/reducers';
-import Sidebar from './components/sidebar';
-import TopNav from './components/topnav';
-import Dashboard from './pages/dashboard';
-import Product from './pages/products';
 import path from './constants/path';
-import Account from './pages/account';
+import ForgotPassword from './pages/user/forgotpass';
 
 const App = () => {
-  const themeReducer = useSelector((state: RootState) => state.ThemeReducer);
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.ReducerAuth.user);
+  const token = useSelector((state: RootState) => state.ReducerAuth.token);
 
+  const checkData = () => {
+    const userLocal = localStorage.getItem('user');
+    const tokenLocal = localStorage.getItem('token');
+    const parseUser = userLocal ? JSON.parse(userLocal) : null;
+    if (tokenLocal && parseUser && !token) {
+      dispatch({
+        type: Types.LOGIN,
+        value: { user: parseUser, token: tokenLocal },
+      });
+    }
+  };
   React.useEffect(() => {
-    const themeClass = localStorage.getItem('themeMode') || 'theme-mode-light';
-    const colorClass = localStorage.getItem('colorMode') || 'theme-mode-light';
-
-    dispatch(ThemeAction.setMode(themeClass));
-    dispatch(ThemeAction.setColor(colorClass));
-  }, [dispatch]);
+    if (!user) {
+      checkData();
+    }
+  }, [user]);
 
   return (
     <Router>
-      <div className={`layout ${themeReducer.mode} ${themeReducer.color}`}>
-        <div className="layout__sidebar">
-          <Sidebar />
-          <div className="layout__content">
-            <TopNav />
-            <div className="layout__content-main">
-              <Routes>
-                <Route path={path.home} element={<Dashboard />} />
-                <Route path={path.products} element={<Product />} />
-                <Route path={path.accounts} element={<Account />} />
-              </Routes>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ToastContainer />
+      <Routes>
+        <Route path={path.login} element={<Login />} />
+        <Route path={path.forgotpass} element={<ForgotPassword />} />
+
+        <Route path="*" element={!token ? <Navigate to={path.login} replace /> : <Layout />} />
+      </Routes>
     </Router>
   );
 };

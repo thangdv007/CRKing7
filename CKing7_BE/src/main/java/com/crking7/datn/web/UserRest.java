@@ -1,5 +1,6 @@
 package com.crking7.datn.web;
 
+import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.web.dto.request.AddressRequest;
 import com.crking7.datn.web.dto.response.AddressResponse;
 import com.crking7.datn.web.dto.response.UserResponse;
@@ -34,7 +35,11 @@ public class UserRest {
     public ResponseEntity<?> getUser(@PathVariable("id") long userId){
         try{
             UserResponse userResponse = userService.getUser(userId);
-            return ResponseEntity.ok(Objects.requireNonNullElse(userResponse, "Lỗi!"));
+            if (userResponse != null){
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponse), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(ApiResponse.build(400, false, "Thành công", "Không có tài khoản này"), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }

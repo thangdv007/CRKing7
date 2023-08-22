@@ -39,6 +39,12 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    public SaleResponse getSale(Long id) {
+        Sale sale = saleRepository.findById(id).orElseThrow();
+        return saleMapper.mapModelToResponse(sale);
+    }
+
+    @Override
     public SaleResponse create(SaleRequest saleRequest) {
         Sale sale = saleRepository.findByName(saleRequest.getName());
         if (sale == null) {

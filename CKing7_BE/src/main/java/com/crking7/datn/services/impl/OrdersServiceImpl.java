@@ -532,8 +532,8 @@ public class OrdersServiceImpl implements OrdersService {
 
     //lấy tất cả đơn hàng theo status
     @Override
-    public List<OrdersResponse> getOrder(Integer status, String startDate, String endDate, int pageNo, int pageSize, String sortBy, boolean desc) {
-        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+    public List<OrdersResponse> getOrder(Integer status, String startDate, String endDate, int pageNo, int pageSize, String sortBy, boolean asc) {
+        Sort.Direction sortDirection = asc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNo, pageSize, sortDirection, sortBy);
         Date parsedStartDate = null;
         Date parsedEndDate = null;

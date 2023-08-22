@@ -1,5 +1,6 @@
 package com.crking7.datn.mapper;
 
+import com.crking7.datn.web.dto.request.AddEmpRequest;
 import com.crking7.datn.web.dto.request.RegisterRequest;
 import com.crking7.datn.web.dto.request.UserRequest;
 import com.crking7.datn.web.dto.response.UserResponse;
@@ -12,6 +13,8 @@ public interface UserMapper {
      *
      */
     User mapSignupToModel(RegisterRequest registerRequest);
+
+    User mapSignupToModel2(AddEmpRequest addEmpRequest);
 
     /**
      *

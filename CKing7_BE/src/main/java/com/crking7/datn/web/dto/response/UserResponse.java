@@ -1,7 +1,10 @@
 package com.crking7.datn.web.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -10,8 +13,6 @@ public class UserResponse {
     private long id;
 
     private String username;
-
-    private String password;
 
     private String email;
 
@@ -24,6 +25,12 @@ public class UserResponse {
     private String phone;
 
     private String image;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss dd-MM-yyyy", timezone = "Asia/Ho_Chi_Minh")
+    private Date createdDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss dd-MM-yyyy", timezone = "Asia/Ho_Chi_Minh")
+    private Date modifiedDate;
 
     private Set<RoleResponse> roles;
 
