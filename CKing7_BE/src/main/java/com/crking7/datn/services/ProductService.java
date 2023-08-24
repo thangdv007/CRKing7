@@ -12,10 +12,18 @@ public interface ProductService {
      *
      */
     List<ProductResponse> getProducts(int pageNo, int pageSize, String sortBy);
-    List<ProductResponse> getAllProducts (String keyword, int pageNo, int pageSize, String sortBy);
+
+    List<ProductResponse> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy);
+
     ProductResponse getProduct(long productId);
+
+    ProductResponse getProductByName(String name);
+
     ProductResponse getProductAdmin(long productId);
+
     ProductResponse getProductBySize(long sizeId);
+
+    List<ProductResponse> getProductBySaleAdmin(String Keyword, Long saleId);
 
     List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy);
 
@@ -27,8 +35,9 @@ public interface ProductService {
 
     List<ProductResponse> getProductsByPrice(int minPrice, int maxPrice, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> searchProduct (String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
-//    List<ProductResponse> getProductByColorSizePriceCategory(String valueSize, String valueColor, int minPrice, int maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
+    List<ProductResponse> searchProduct(String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
+
+    //    List<ProductResponse> getProductByColorSizePriceCategory(String valueSize, String valueColor, int minPrice, int maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
     ProductResponse createProduct(ProductRequest productRequest);
 
     ProductResponse updateProduct(ProductUDRequest productRequest);
@@ -46,4 +55,6 @@ public interface ProductService {
     List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy);
 
     List<ProductResponse> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy);
+
+    List<ProductResponse> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy);
 }

@@ -1,5 +1,6 @@
 package com.crking7.datn.web.dto.request;
 
+import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,5 +12,5 @@ public class BannerRequest {
 
 	private String src;
 
-	private long categoryId;
+	private Long categoryId;
 }

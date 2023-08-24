@@ -91,6 +91,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponse getProductByName(String name) {
+        Product product = productRepository.findByName(name);
+        return productMapper.mapModelToResponse(product);
+    }
+
+    @Override
     public ProductResponse getProductBySize(long sizeId) {
         Size size = sizeRepository.findById(sizeId).orElseThrow();
         if (size != null) {
@@ -334,7 +340,6 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-
     @Override
     @Transactional
     public ProductResponse updateProduct(ProductUDRequest productRequest) {
@@ -419,6 +424,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(long id) {
         Product product = productRepository.findById(id).orElseThrow();
+        product.setSale(null);
+        product.setProductAuthor(null);
+//        product.setColors(null);
+//        product.setProductImages(null);
+        product.setProductCategory(null);
+        productRepository.save(product);
+
         productRepository.delete(product);
     }
 
@@ -482,5 +494,22 @@ public class ProductServiceImpl implements ProductService {
                     .map(productMapper::mapModelToResponse)
                     .toList();
         }
+    }
+
+    @Override
+    public List<ProductResponse> getProductBySaleAdmin(String keyword, Long saleId) {
+        List<Product> product = productRepository.findBySaleIdAndKeyword(keyword, saleId);
+        return product.stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+    }
+
+    @Override
+    public List<ProductResponse> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getProductNoSale(keyword, pageable);
+        return products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
     }
 }

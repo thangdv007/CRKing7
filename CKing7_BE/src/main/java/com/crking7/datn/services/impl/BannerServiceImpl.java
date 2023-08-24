@@ -35,7 +35,7 @@ public class BannerServiceImpl implements BannerService {
     public List<BannerResponse> getNumberOfBanners(int number) {
         Pageable pageable = PageRequest.of(0, number, Sort.by("id").descending());
         Page<Banner> banners = bannerRepository.findByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (!banners.isEmpty()){
+        if (!banners.isEmpty()) {
             return banners.getContent().stream()
                     .map(bannerMapper::mapModelToResponse)
                     .toList();
@@ -50,7 +50,7 @@ public class BannerServiceImpl implements BannerService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("category", "categoryId", categoryId));
 
         Page<Banner> banners = bannerRepository.findByCategoryAndStatus(pageable, category, Constants.ACTIVE_STATUS);
-        if (!banners.isEmpty()){
+        if (!banners.isEmpty()) {
             return banners.getContent().stream()
                     .map(bannerMapper::mapModelToResponse)
                     .toList();
@@ -60,71 +60,81 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public BannerResponse createBanner(BannerRequest bannerRequest) {
-        Category category = categoryRepository.findById(bannerRequest.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("category", "id", bannerRequest.getCategoryId()));;
-        if(category == null){
-            BannerResponse errMessage = new BannerResponse();
-            errMessage.setMsg("Danh mục không tồn tại");
-            return  errMessage;
+        Banner banner = bannerRepository.findByName(bannerRequest.getName());
+        if (banner != null) {
+            return null;
         }
-        else {
-            Banner banner = bannerRepository.findByName(bannerRequest.getName());
-            if(banner != null){
-                return null;
-            }else{
-                Banner bannerNew = bannerMapper.mapRequestToModel(bannerRequest);
-                Date date = new Date();
-                bannerNew.setCreatedDate(date);
-                bannerNew.setModifiedDate(date);
-                bannerNew.setStatus(1);
-                bannerNew.setMsg("Tạo banner thành công");
-                bannerNew.setCategory(category);
-                Banner bannerResp = bannerRepository.save(bannerNew);
-                BannerResponse bannerResponse = bannerMapper.mapModelToResponse(bannerResp);
-                return bannerResponse;
-            }
+        if (bannerRequest.getCategoryId() == null) {
+            Banner bannerNew = bannerMapper.mapRequestToModel(bannerRequest);
+            Date date = new Date();
+            bannerNew.setCreatedDate(date);
+            bannerNew.setModifiedDate(date);
+            bannerNew.setStatus(1);
+            bannerNew.setCategory(null);
+            Banner bannerResp = bannerRepository.save(bannerNew);
+            return bannerMapper.mapModelToResponse(bannerResp);
         }
+        Category category = categoryRepository.findById(bannerRequest.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("category", "id", bannerRequest.getCategoryId()));
+        Banner bannerNew = bannerMapper.mapRequestToModel(bannerRequest);
+        Date date = new Date();
+        bannerNew.setCreatedDate(date);
+        bannerNew.setModifiedDate(date);
+        bannerNew.setStatus(1);
+        bannerNew.setCategory(category);
+        Banner bannerResp = bannerRepository.save(bannerNew);
+        return bannerMapper.mapModelToResponse(bannerResp);
     }
 
     @Override
     public BannerResponse getBannerById(long id) {
         Banner banner = bannerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Banner", "id", id));
-        if(banner != null ){
+        if (banner != null) {
             return bannerMapper.mapModelToResponse(banner);
-        }else{
-            BannerResponse errMessage = new BannerResponse();
-            errMessage.setMsg("Banner không tồn tại");
-            return errMessage;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public BannerResponse getBannerByName(String name) {
+        Banner banner = bannerRepository.findByName(name);
+        if (banner != null) {
+            return bannerMapper.mapModelToResponse(banner);
+        } else {
+            return null;
         }
     }
 
     @Override
     public List<BannerResponse> getBanners(int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Banner> banners  = bannerRepository.findByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (!banners.isEmpty()){
+        Page<Banner> banners = bannerRepository.findByStatus(pageable, Constants.ACTIVE_STATUS);
+        if (!banners.isEmpty()) {
             return banners.stream()
                     .map(bannerMapper::mapModelToResponse)
                     .toList();
-        }else {
+        } else {
             return null;
         }
     }
+
     @Override
-    public List<BannerResponse> getAllBanners(int pageNo, int pageSize, String sortBy) {
+    public List<BannerResponse> getAllBanners(String keyword, int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Banner> banners  = bannerRepository.findAll(pageable);
-        if (!banners.isEmpty()){
+        Page<Banner> banners = bannerRepository.findAllBanners(keyword, pageable);
+        if (!banners.isEmpty()) {
             return banners.stream()
                     .map(bannerMapper::mapModelToResponse)
                     .toList();
-        }else {
+        } else {
             return null;
         }
     }
+
     @Override
-    public void deleteBanner(long id ) {
+    public void deleteBanner(long id) {
         Banner banner = bannerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Banner", "id", id));
-        if (banner != null ){
+        if (banner != null) {
             banner.setCategory(null);
             bannerRepository.save(banner);
         }
@@ -145,7 +155,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public BannerResponse hideBanner(long id) {
+    public String hideBanner(long id) {
         Banner banner = bannerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Banner", "id", id));
         if (banner == null) {
             return null; // Không tìm thấy banner
@@ -154,6 +164,19 @@ public class BannerServiceImpl implements BannerService {
         banner.setModifiedDate(currentDate);
         banner.setStatus(0);
         bannerRepository.save(banner);
-        return bannerMapper.mapModelToResponse(banner);
+        return "Banner đã được ẩn";
+    }
+
+    @Override
+    public String showBanner(long id) {
+        Banner banner = bannerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Banner", "id", id));
+        if (banner == null) {
+            return null; // Không tìm thấy banner
+        }
+        Date currentDate = new Date();
+        banner.setModifiedDate(currentDate);
+        banner.setStatus(1);
+        bannerRepository.save(banner);
+        return "Banner đã được hiện";
     }
 }

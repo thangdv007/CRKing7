@@ -114,7 +114,7 @@ const AddEmp = () => {
             theme: 'dark',
           });
         } else {
-          toast.error('Đăng kí không thành công', {
+          toast.error(`${res.data}`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',

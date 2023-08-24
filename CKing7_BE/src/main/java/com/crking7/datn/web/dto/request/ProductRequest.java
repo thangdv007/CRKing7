@@ -1,5 +1,6 @@
 package com.crking7.datn.web.dto.request;
 
+import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.util.List;

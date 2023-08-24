@@ -6,6 +6,9 @@ export interface Category {
   type: number;
   urlImage: any;
   banners: Banner;
+  createdDate: string;
+  modifiedDate: string;
+  categoryParent: number | null,
   childCategories: ChildCategories;
 }
 export interface Banner {

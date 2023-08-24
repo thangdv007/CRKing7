@@ -9,12 +9,23 @@ import java.util.List;
 
 public interface SaleService {
     SaleResponse getSale(Long id);
-    SaleResponse create(SaleRequest saleRequest);
-    SaleResponse update(long id, SaleRequest saleRequest);
-    List<SaleResponse> getAll(int pageNo, int pageSize, String sortBy);
-    void delete(long id);
-    void addProductsToSale(Long id, List<Long> productIds);
 
-    void removeProductsFromSale (Long id, List<Long> productIds);
+    SaleResponse getSaleByName(String name);
+
+    SaleResponse create(SaleRequest saleRequest);
+
+    SaleResponse update(long id, SaleRequest saleRequest);
+
+    List<SaleResponse> getAll(String keyword, int pageNo, int pageSize, String sortBy);
+
+    void delete(long id);
+
+    String addProductsToSale(Long id, List<Long> productIds);
+
+    String removeProductsFromSale(Long id, List<Long> productIds);
+
+    String hideSale(Long id);
+
+    String showSale(Long id);
 
 }

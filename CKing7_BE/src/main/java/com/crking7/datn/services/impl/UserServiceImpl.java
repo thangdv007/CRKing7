@@ -93,6 +93,10 @@ public class UserServiceImpl implements UserService {
     public UserResponse findByUserName(String username) {
         return userMapper.mapModelToResponse(userRepository.findByUsername(username));
     }
+    @Override
+    public UserResponse findByEmail(String email) {
+        return userMapper.mapModelToResponse(userRepository.findByEmail(email));
+    }
 //    @Override
 //    public Object login(LoginRequest loginRequest) {
 //        UserResponse userResponse = findByUserName(loginRequest.getUsername());

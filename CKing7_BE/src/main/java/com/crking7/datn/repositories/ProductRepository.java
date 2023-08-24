@@ -103,4 +103,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "JOIN c.sizes s " +
             "WHERE (:isActive = true AND s.total > 0) OR (:isActive = false AND s.total = 0)")
     Page<Product> getProductByQuantity(@Param("isActive") boolean isActive, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE (p.sale IS NULL OR p.sale.id IS NULL) AND " +
+            "(:keyword IS NULL OR p.name LIKE %:keyword% OR p.sku LIKE %:keyword%)")
+    Page<Product> getProductNoSale(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE (p.sale.id = :saleId) AND " +
+            "(:keyword IS NULL OR p.name LIKE %:keyword% OR p.sku LIKE %:keyword%)")
+    List<Product> findBySaleIdAndKeyword(@Param("keyword") String keyword,@Param("saleId") long saleId);
 }

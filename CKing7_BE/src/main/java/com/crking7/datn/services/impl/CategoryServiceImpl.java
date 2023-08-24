@@ -25,6 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     private final CategoryMapper categoryMapper;
+
     public CategoryServiceImpl(CategoryRepository categoryRepository,
                                CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
@@ -35,27 +36,33 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryResponse> getCategories(int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Category> categories  = categoryRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (!categories.isEmpty()){
+        Page<Category> categories = categoryRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
+        if (!categories.isEmpty()) {
             return categories.stream()
                     .map(categoryMapper::mapModelToResponse)
                     .toList();
-        }else {
+        } else {
             return null;
         }
     }
 
     @Override
-    public List<CategoryResponse> getAllCategory(int pageNo, int pageSize, String sortBy) {
+    public List<CategoryResponse> getAllCategory(String keyword, int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Category> categories  = categoryRepository.findAll(pageable);
-        if (!categories.isEmpty()){
+        Page<Category> categories = categoryRepository.getAllByKeyword(keyword, pageable);
+        if (!categories.isEmpty()) {
             return categories.stream()
                     .map(categoryMapper::mapModelToResponse)
                     .toList();
-        }else {
+        } else {
             return null;
         }
+    }
+
+    @Override
+    public CategoryResponse getCategoryByName(String title) {
+        Category category = categoryRepository.findByTitle(title);
+        return categoryMapper.mapModelToResponse(category);
     }
 
     @Override
@@ -103,32 +110,56 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse createCategory(CategoryRequest categoryRequest) {
         Category category = categoryRepository.findByTitle(categoryRequest.getTitle());
-        if(category != null){
+        if (category != null) {
             return null;
-        }else{
+        } else {
+            Category categoryNew = categoryMapper.mapRequestToModel(categoryRequest);
             Category parentCategory = null;
             if (categoryRequest.getParentCategoryId() != 0) {
                 parentCategory = categoryRepository.findById(categoryRequest.getParentCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryRequest.getParentCategoryId()));
+                categoryNew.setParentCategory(parentCategory);
+            }else{
+                categoryNew.setParentCategory(null);
             }
-            Category categoryNew= categoryMapper.mapRequestToModel(categoryRequest);
             Date date = new Date();
             categoryNew.setCreatedDate(date);
             categoryNew.setModifiedDate(date);
             categoryNew.setStatus(1);
             categoryNew.setType(categoryRequest.getType());
-            categoryNew.setParentCategory(parentCategory);
+
             Category categoryResp = categoryRepository.save(categoryNew);
-            CategoryResponse categoryResponse = categoryMapper.mapModelToResponse(categoryResp);
-            return categoryResponse;
+            return categoryMapper.mapModelToResponse(categoryResp);
+        }
+    }
+
+    @Override
+    public CategoryResponse getCategoryAdmin(long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+        if (category != null) {
+            return categoryMapper.mapModelToResponse(category);
+        } else {
+            return null;
         }
     }
 
     @Override
     public CategoryResponse getCategoryById(long id) {
-        Category category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
-        if(category != null ){
+        Category category = categoryRepository.findByIdAndStatus(id, Constants.ACTIVE_STATUS);
+        if (category != null) {
             return categoryMapper.mapModelToResponse(category);
-        }else{
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<CategoryResponse> getParentCategory() {
+        List<Category> categories = categoryRepository.findAllWithNoParentCategory();
+        if (!categories.isEmpty()) {
+            return categories.stream()
+                    .map(categoryMapper::mapModelToResponse)
+                    .toList();
+        } else {
             return null;
         }
     }
@@ -142,12 +173,18 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.updateModel(category, categoryRequest);
         Date currentDate = new Date();
         category.setModifiedDate(currentDate);
+        if(categoryRequest.getParentCategoryId() != 0 ){
+            Category parentCategory = categoryRepository.findById(categoryRequest.getParentCategoryId()).orElseThrow();
+            category.setParentCategory(parentCategory);
+        }else{
+            category.setParentCategory(null);
+        }
         categoryRepository.save(category);
         return categoryMapper.mapModelToResponse(category);
     }
 
     @Override
-    public CategoryResponse hideCategory(long id) {
+    public String hideCategory(long id) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
         if (category == null) {
             return null; // Không tìm thấy danh mục
@@ -156,7 +193,22 @@ public class CategoryServiceImpl implements CategoryService {
         category.setModifiedDate(currentDate);
         category.setStatus(0);
         categoryRepository.save(category);
-        return categoryMapper.mapModelToResponse(category);
+        return "Danh mục đã được ẩn";
+    }
+
+    @Override
+    public String showCategory(long id) {
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
+        if (category == null) {
+            return null; // Không tìm thấy danh mục
+        }
+        Date currentDate = new Date();
+        category.setModifiedDate(currentDate);
+        if (category.getStatus() == 0) {
+            category.setStatus(1);
+        }
+        categoryRepository.save(category);
+        return "Danh mục đã được hiện";
     }
 
     @Override

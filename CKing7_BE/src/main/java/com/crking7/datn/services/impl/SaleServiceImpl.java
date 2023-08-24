@@ -45,6 +45,12 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    public SaleResponse getSaleByName(String name) {
+        Sale sale = saleRepository.findByName(name);
+        return saleMapper.mapModelToResponse(sale);
+    }
+
+    @Override
     public SaleResponse create(SaleRequest saleRequest) {
         Sale sale = saleRepository.findByName(saleRequest.getName());
         if (sale == null) {
@@ -75,9 +81,9 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<SaleResponse> getAll(int pageNo, int pageSize, String sortBy) {
+    public List<SaleResponse> getAll(String keyword, int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Sale> sales = saleRepository.findAll(pageable);
+        Page<Sale> sales = saleRepository.findAllSale(keyword, pageable);
 
         return sales.getContent().stream()
                 .map(saleMapper::mapModelToResponse)
@@ -95,55 +101,68 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public void addProductsToSale(Long id, List<Long> productIds) {
+    public String addProductsToSale(Long id, List<Long> productIds) {
         Sale sale = saleRepository.findById(id).orElseThrow();
+        List<Product> products = productRepository.findAllById(productIds);
+        List<Product> products1 = productRepository.findBySaleId(sale.getId());
+        // Kiểm tra trạng thái (status) của Sale
+        if (sale.getIsActive() == 1) {
+            for (Product product : products) {
+                int salePrice = product.getPrice() - (product.getPrice() * sale.getDiscount() / 100);
 
-        if (sale != null && productIds != null && !productIds.isEmpty()) {
-            List<Product> products = productRepository.findAllById(productIds);
-
-            if (products != null && !products.isEmpty()) {
-                List<Product> products1 = productRepository.findBySaleId(sale.getId());
-                // Kiểm tra trạng thái (status) của Sale
-                if (sale.getIsActive() == 1) {
-                    for (Product product : products) {
-                        int salePrice = product.getPrice() - (product.getPrice() * sale.getDiscount() / 100);
-
-                        if (products1 != null && products1.contains(product)) {
-                            // Cập nhật giá salePrice của sản phẩm khi tồn tại trong products1
-                            product.setSalePrice(salePrice);
-                        } else {
-                            // Cập nhật giá salePrice của sản phẩm khi không tồn tại trong products1
-                            product.setSale(sale);
-                            product.setSalePrice(salePrice);
-                        }
-                    }
+                if (products1 != null && products1.contains(product)) {
+                    // Cập nhật giá salePrice của sản phẩm khi tồn tại trong products1
+                    product.setSalePrice(salePrice);
+                } else {
+                    // Cập nhật giá salePrice của sản phẩm khi không tồn tại trong products1
+                    product.setSale(sale);
+                    product.setSalePrice(salePrice);
                 }
-                // Lưu thay đổi vào cơ sở dữ liệu
-                saleRepository.save(sale);
-                productRepository.saveAll(products);
             }
         }
+        // Lưu thay đổi vào cơ sở dữ liệu
+        saleRepository.save(sale);
+        productRepository.saveAll(products);
+        return "Thêm sản phẩm vào khuyến mãi thành công";
     }
 
     @Override
     @Transactional
-    public void removeProductsFromSale(Long saleId, List<Long> productIds) {
+    public String removeProductsFromSale(Long saleId, List<Long> productIds) {
         Sale sale = saleRepository.findById(saleId).orElseThrow();
-        if (sale != null && productIds != null && !productIds.isEmpty()) {
-            List<Product> products = sale.getProducts();
-            if (products != null && !products.isEmpty()) {
-                // Cập nhật giá salePrice của các sản phẩm về giá ban đầu (price)
-                for (Product product : products) {
-                    if(productIds.contains(product.getId())) {
-                        product.setSale(null);
-                        product.setSalePrice(product.getPrice());
-                    }
+        List<Product> products = sale.getProducts();
+        if (products != null && !products.isEmpty()) {
+            // Cập nhật giá salePrice của các sản phẩm về giá ban đầu (price)
+            for (Product product : products) {
+                if (productIds.contains(product.getId())) {
+                    product.setSale(null);
+                    product.setSalePrice(product.getPrice());
                 }
-                // Lưu thay đổi vào cơ sở dữ liệu
-                saleRepository.save(sale);
-                productRepository.saveAll(products);
             }
+            // Lưu thay đổi vào cơ sở dữ liệu
+            saleRepository.save(sale);
+            productRepository.saveAll(products);
         }
+        return "Xóa sản phẩm khỏi khuyến mãi thành công";
     }
 
+    @Override
+    public String hideSale(Long id) {
+        Sale sale = saleRepository.findById(id).orElseThrow();
+        Date date = new Date();
+        sale.setIsActive(0);
+        sale.setModifiedDate(date);
+        saleRepository.save(sale);
+        return "Khuyến mãi đã được ẩn";
+    }
+
+    @Override
+    public String showSale(Long id) {
+        Sale sale = saleRepository.findById(id).orElseThrow();
+        Date date = new Date();
+        sale.setIsActive(1);
+        sale.setModifiedDate(date);
+        saleRepository.save(sale);
+        return "Khuyến mãi đã được hiện";
+    }
 }

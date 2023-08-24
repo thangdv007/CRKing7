@@ -17,12 +17,16 @@ public interface BannerService {
 
     BannerResponse getBannerById(long id);
 
+    BannerResponse getBannerByName(String name);
+
     List<BannerResponse> getBanners(int pageNo, int pageSize, String sortBy);
-    List<BannerResponse> getAllBanners(int pageNo, int pageSize, String sortBy);
+    List<BannerResponse> getAllBanners(String keyword, int pageNo, int pageSize, String sortBy);
 
     void deleteBanner(long id);
 
     BannerResponse updateBanner(long id, BannerRequest bannerRequest);
 
-    BannerResponse hideBanner(long id);
+    String hideBanner(long id);
+
+    String showBanner(long id);
 }

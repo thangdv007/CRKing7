@@ -34,7 +34,7 @@ public class ASaleRest {
         try {
             SaleResponse saleResponse = saleService.getSale(id);
             if (saleResponse != null) {
-                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", saleResponse), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
             }
@@ -42,25 +42,28 @@ public class ASaleRest {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
+
     @PostMapping("/create")
-    public ResponseEntity<?> createSale(@RequestBody SaleRequest saleRequest){
+    public ResponseEntity<?> createSale(@RequestBody SaleRequest saleRequest) {
         try {
             SaleResponse saleResponse = saleService.create(saleRequest);
             if (saleResponse != null) {
-                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", saleResponse), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
     @GetMapping("")
-    public ResponseEntity<?> getAll(@RequestParam(value = "pageNo", defaultValue = "0")int pageNo,
-                                        @RequestParam(value = "pageSize", defaultValue = "20")int pageSize,
-                                        @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
+    public ResponseEntity<?> getAll(@RequestParam(required = false) String keyword,
+                                    @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                    @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                    @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
         try {
-            List<SaleResponse> saleResponses = saleService.getAll(pageNo, pageSize, sortBy);
+            List<SaleResponse> saleResponses = saleService.getAll(keyword, pageNo, pageSize, sortBy);
             if (saleResponses != null) {
                 int total = saleResponses.size();
                 List<Object> data = new ArrayList<>(saleResponses);
@@ -74,53 +77,106 @@ public class ASaleRest {
                     .body("Lỗi! " + e.getMessage());
         }
     }
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable("id") long id,
-                                          @RequestBody SaleRequest saleRequest){
-        try{
-            SaleResponse saleResponse = saleService.update(id, saleRequest);
-            if (saleResponse != null) {
-                return new ResponseEntity<>(ApiResponse.build(200, true,"thành công", saleResponse), HttpStatus.OK);
+                                    @RequestBody SaleRequest saleRequest) {
+        try {
+            SaleResponse sale = saleService.getSaleByName(saleRequest.getName());
+            SaleResponse sale2 = saleService.getSale(id);
+            if (sale != null) {
+                if (sale2 != null && sale2.getId() == sale.getId()) {
+                    SaleResponse saleResponse = saleService.update(id, saleRequest);
+                    if (saleResponse != null) {
+                        return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", saleResponse), HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Cập nhật không thành công"), HttpStatus.OK);
+                    }
+                } else {
+                    return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Tên danh mục đã tồn tại"), HttpStatus.OK);
+                }
             } else {
-                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+                SaleResponse saleResponse = saleService.update(id, saleRequest);
+                if (saleResponse != null) {
+                    return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", saleResponse), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Cập nhật không thành công"), HttpStatus.OK);
+                }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") long id) {
         try {
             saleService.delete(id);
-            return ResponseEntity.ok("Xóa chương trình sale thành công !");
-        }catch (Exception e){
+            return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", "Xóa khuyến mãi thành công"), HttpStatus.OK);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Xóa chương trình sale không thành công! Lỗi " + e.getMessage());
         }
     }
+
     @PostMapping("/add-product/{id}")
-    public ResponseEntity<String> addProductsToSale(
+    public ResponseEntity<?> addProductsToSale(
             @PathVariable(name = "id") Long id,
             @RequestParam(name = "productIds") List<Long> productIds) {
 
         try {
-            saleService.addProductsToSale(id, productIds);
-            return ResponseEntity.ok("Thêm sản phẩm vào chương trình khuyến mãi thành công.");
+            if (!productIds.isEmpty()) {
+                String s = saleService.addProductsToSale(id, productIds);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", s), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", "Hãy chọn ít nhất 1 sản phẩm"), HttpStatus.OK);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Không thể thêm sản phẩm . Lỗi : " + e.getMessage());
         }
     }
+
     @PostMapping("/remove-product/{id}")
-    public ResponseEntity<String> removeProductsFromSale(
+    public ResponseEntity<?> removeProductsFromSale(
             @PathVariable(name = "id") Long id,
             @RequestParam(name = "productIds") List<Long> productIds) {
 
         try {
-            saleService.removeProductsFromSale(id, productIds);
-            return ResponseEntity.ok("Xóa sản phẩm khỏi chương trình khuyến mãi thành công.");
+            if (!productIds.isEmpty()) {
+                String s = saleService.removeProductsFromSale(id, productIds);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", s), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", "Hãy chọn ít nhất 1 sản phẩm"), HttpStatus.OK);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Không thể xóa sản phẩm . Lỗi : " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hideSale(@PathVariable("id") Long id) {
+        try {
+            String s = saleService.hideSale(id);
+            if (s == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", "Không tìm thấy danh mục"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", s), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showSale(@PathVariable("id") Long id) {
+        try {
+            String s = saleService.showSale(id);
+            if (s == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", "Không tìm thấy danh mục"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", s), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

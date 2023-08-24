@@ -9,14 +9,8 @@ public class CategoryRequest {
 	private String title;
 
 	private int type;
-	
-	private Date modifiedDate;
-
-	private Date createdDate;
 	 
 	private String description;
 
-	private String urlImage;
-
-	private long parentCategoryId;
+	private Long parentCategoryId;
 }

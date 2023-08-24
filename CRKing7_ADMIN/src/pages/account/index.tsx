@@ -140,7 +140,7 @@ const Account = () => {
               <th>Ngày tạo</th>
               <th>Trạng thái</th>
               <th>ROLE</th>
-              <th></th>
+              <th className="text-center">Hành động</th>
               <th></th>
             </tr>
           </thead>
@@ -174,10 +174,14 @@ const Account = () => {
                       </td>
                     )}
                     <td>{item.roles[0].name.replace('ROLE_', '')}</td>
-                    <td>
+                    <td className="flex flex-col items-center justify-between ">
                       <i
-                        className="bx bxs-user-detail text-2xl font-semibold text-blue"
+                        className="bx bxs-show text-2xl font-semibold text-blue"
                         onClick={() => navigate(path.detailAcc, { state: item.id })}
+                      ></i>
+                      <i
+                        className="bx bxs-pencil text-2xl font-semibold text-blue pt-2"
+                        onClick={() => navigate('/', { state: item.id })}
                       ></i>
                     </td>
                   </tr>

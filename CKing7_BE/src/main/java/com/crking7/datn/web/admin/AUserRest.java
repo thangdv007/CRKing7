@@ -70,8 +70,19 @@ public class AUserRest {
     @PostMapping("/addEmp")
     public ResponseEntity<?> addEmP(@RequestBody AddEmpRequest addEmpRequest) {
         try {
-            String s = userService.addEmP(addEmpRequest);
-            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
+            UserResponse userResponse = userService.findByUserName(addEmpRequest.getUsername());
+            UserResponse userResponse1 = userService.findByEmail(addEmpRequest.getEmail());
+            if (userResponse == null) {
+                if (userResponse1 == null){
+                    String s = userService.addEmP(addEmpRequest);
+                    return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>(ApiResponse.build(200, false, "Thành công", "Email đã tồn tại"), HttpStatus.OK);
+                }
+            }else {
+                return new ResponseEntity<>(ApiResponse.build(200, false, "Thành công", "Tên tài khoản đã tồn tại"), HttpStatus.OK);
+            }
+
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

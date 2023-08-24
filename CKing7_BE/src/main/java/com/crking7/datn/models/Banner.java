@@ -33,9 +33,6 @@ public class Banner {
 	@Column
 	private Date modifiedDate;
 
-	@Column
-	private String msg;
-	
 	@Column(nullable = false)
 	private int status;
 	

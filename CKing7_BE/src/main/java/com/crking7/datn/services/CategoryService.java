@@ -7,15 +7,16 @@ import java.util.List;
 
 public interface CategoryService {
     List<CategoryResponse> getCategories(int pageNo, int pageSize, String sortBy);
-    List<CategoryResponse> getAllCategory(int pageNo, int pageSize, String sortBy);
+    CategoryResponse getCategoryByName(String title);
+    List<CategoryResponse> getAllCategory(String keyword, int pageNo, int pageSize, String sortBy);
     List<CategoryResponse> getCategoriesByType(int type);
     CategoryResponse getCategoryById (long id);
+    List<CategoryResponse> getParentCategory();
+    CategoryResponse getCategoryAdmin (long id);
     CategoryResponse createCategory(CategoryRequest categoryRequest);
-
     CategoryResponse updateCategory(long id, CategoryRequest categoryRequest);
-
-    CategoryResponse hideCategory(long id);
-
+    String hideCategory(long id);
+    String showCategory(long id);
     void deleteCategory(long id);
 
 }

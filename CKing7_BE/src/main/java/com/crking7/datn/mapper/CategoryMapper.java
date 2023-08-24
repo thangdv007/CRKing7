@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper
 public interface CategoryMapper {
 		//Map model to response
+		@Mapping(target = "categoryParent",source = "parentCategory.id")
 		CategoryResponse mapModelToResponse(Category category);
 
 		// mapper one model to dto

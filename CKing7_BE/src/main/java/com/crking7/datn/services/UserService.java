@@ -15,6 +15,7 @@ public interface UserService {
     String addEmP(AddEmpRequest addEmpRequest);
     String showUser(Long userId, Long id);
     UserResponse findByUserName(String username);
+    UserResponse findByEmail(String email);
 //    Object login(LoginRequest loginRequest);
     UserResponse getUser(long userId);
     Object registerUser(RegisterRequest registerRequest);

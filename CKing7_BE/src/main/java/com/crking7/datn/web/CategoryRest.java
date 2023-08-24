@@ -39,19 +39,6 @@ public class CategoryRest {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryById(@PathVariable(name = "id") long id){
-        try {
-            CategoryResponse categoryResponse = categoryService.getCategoryById(id);
-            if(categoryResponse == null){
-                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
-            }else{
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", categoryResponse), HttpStatus.OK);
-            }
-        }catch (Exception e){
-            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
     @GetMapping("/type/{type}")
     public ResponseEntity<?> getCategoriesByType(@PathVariable("type") int type){
         try {
@@ -63,6 +50,19 @@ public class CategoryRest {
                 return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
             }
         }catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategoryById(@PathVariable(name = "id") long id){
+        try {
+            CategoryResponse categoryResponse = categoryService.getCategoryById(id);
+            if(categoryResponse == null){
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Lấy dữ liệu thành công", null), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", categoryResponse), HttpStatus.OK);
+            }
+        }catch (Exception e){
             return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

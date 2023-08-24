@@ -25,6 +25,11 @@
         "icon": "bx bx-bar-chart-alt"
     },
     {
+      "display_name": "Banner",
+      "route": "/banners",
+      "icon": "bx bxs-image"
+    },
+    {
         "display_name": "Danh mục",
         "route": "/categories",
         "icon": "bx bx-list-ol"
@@ -43,7 +48,7 @@
       "display_name": "Chăm sóc khách hàng",
       "route": "/chat",
       "icon": "bx bx-chat"
-  },
+    },
     {
         "display_name": "Cài đặt",
         "route": "/settings",
