@@ -14,7 +14,6 @@ import org.mapstruct.*;
 public interface ArticleMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "categoryId", source = "category.id")
-    @Mapping(target = "images", source = "articleImages")
     ArticleResponse mapToResponse(Article article);
 
     ArticleImageResponse mapImageToResponse(ArticleImage articleImage);
@@ -25,5 +24,5 @@ public interface ArticleMapper {
 
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateModel(@MappingTarget Article article, ArticleUDRequest articleRequest);
+    void updateModel(@MappingTarget Article article, ArticleRequest articleRequest);
 }

@@ -1,5 +1,6 @@
 package com.crking7.datn.web.admin;
 
+import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.services.ProductImageService;
 import com.crking7.datn.services.ProductService;
 import com.crking7.datn.web.dto.request.ProductRequest;
@@ -21,7 +22,7 @@ public class AProductImageRest {
     public ResponseEntity<?> delete(@PathVariable(name = "id") long id) {
         try {
             productImageService.delete(id);
-            return ResponseEntity.ok("Xóa ảnh sản phẩm thành công!");
+            return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", "Xóa ảnh sản phẩm thành công!"), HttpStatus.OK);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xóa ảnh sản phẩm không thành công! Lỗi " + e.getMessage());
         }

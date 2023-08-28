@@ -33,7 +33,15 @@ const path = {
   detailSale: '/deail-sale',
   editSale: '/edit-sale',
   addProductToSale: '/add-product-sale',
-  
+  //article
+  addArticle: '/add-article',
+  detailArticle: '/deail-article',
+  editArticle: '/edit-article',  
+  //order
+  addOrder: '/add-order',
+  detailOrder: '/deail-order',
+  editOrder: '/edit-order', 
+
 } as const;
 
 

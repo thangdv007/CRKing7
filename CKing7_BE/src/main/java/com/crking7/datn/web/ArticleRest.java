@@ -1,11 +1,14 @@
 package com.crking7.datn.web;
 
+import com.crking7.datn.helper.ApiResponse;
+import com.crking7.datn.helper.ApiResponsePage;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.services.ArticleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,7 +27,14 @@ public class ArticleRest {
                                          @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
         try{
             List<ArticleResponse> articleResponses = articleService.getArticles(pageNo, pageSize, sortBy);
-            return ResponseEntity.ok(Objects.requireNonNullElse(articleResponses, "Bài viết đang được cập nhật!"));
+            if (articleResponses != null) {
+                int total = articleResponses.size();
+                List<Object> data = new ArrayList<>(articleResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
@@ -36,7 +46,14 @@ public class ArticleRest {
                                                    @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
         try{
             List<ArticleResponse> articleResponses = articleService.getArticleByCategory(pageNo, pageSize, sortBy, categoryId);
-            return ResponseEntity.ok(Objects.requireNonNullElse(articleResponses, "Bài viết đang được cập nhật!"));
+            if (articleResponses != null) {
+                int total = articleResponses.size();
+                List<Object> data = new ArrayList<>(articleResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
@@ -46,7 +63,11 @@ public class ArticleRest {
     public ResponseEntity<?> getArticle(@PathVariable("id") long articleId){
         try{
             ArticleResponse articleResponse = articleService.getArticle(articleId);
-            return ResponseEntity.ok(Objects.requireNonNullElse(articleResponse, "Bài viết đang được cập nhật!"));
+            if (articleResponse == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", articleResponse), HttpStatus.OK);
+            }
         }catch (Exception e) {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }

@@ -1,5 +1,6 @@
 package com.crking7.datn.web;
 
+import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.web.dto.response.BannerResponse;
 import com.crking7.datn.services.BannerService;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,11 @@ public class BannerRest {
     public ResponseEntity<?> getBanners(@RequestParam(name = "q", defaultValue = "3") int number){
         try{
             List<BannerResponse> bannerResponses = bannerService.getNumberOfBanners(number);
-            return ResponseEntity.ok(Objects.requireNonNullElse(bannerResponses, "Lỗi tải banner!"));
+            if (bannerResponses == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Lỗi tải ảnh banner"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", bannerResponses), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
@@ -35,7 +40,11 @@ public class BannerRest {
     public ResponseEntity<?> getBannersByCategory(@PathVariable("id") long categoryId){
         try{
             List<BannerResponse> bannerResponses = bannerService.getNumberOfBannersByCategory(categoryId, 3);
-            return ResponseEntity.ok(Objects.requireNonNullElse(bannerResponses, "Lỗi tải banner!"));
+            if (bannerResponses == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Lỗi tải ảnh banner"), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", bannerResponses), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }

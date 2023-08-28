@@ -76,6 +76,11 @@ public class OrdersServiceImpl implements OrdersService {
         return ordersMapper.mapToResponse(orders);
     }
 
+    @Override
+    public OrdersResponse getOrder(long orderId) {
+        Orders orders = ordersRepository.findByIdAndType(orderId, Constants.ORDERS_TYPE);
+        return ordersMapper.mapToResponse(orders);
+    }
 
     //thêm vào giỏ hàng
     @Override
@@ -355,15 +360,15 @@ public class OrdersServiceImpl implements OrdersService {
         Orders orders = ordersRepository.findById(udOrdersRequest.getOrderId()).orElseThrow();
         Date date = new Date();
         if (orders.getStatus() == Constants.APPROVED_STATUS && orders.getPaymentMethod() != null) {
-            return "Đơn hàng này đã được xác nhận";
+            return "1";
         } else if (orders.getStatus() == Constants.SHIPPING_STATUS) {
-            return "Bạn phải kiểm tra và xác nhận đơn hàng trước khi chuyển đi";
+            return "2";
         } else if (orders.getStatus() == Constants.DELIVERED_STATUS) {
-            return "Đơn hàng này đã được giao thành công";
+            return "3";
         } else if (orders.getStatus() == Constants.REFUSE_STATUS) {
-            return "Đơn hàng này khách hàng đã từ chối nhận";
+            return "4";
         } else if (orders.getStatus() == Constants.CANCEL_STATUS) {
-            return "Đơn hàng này đã được hủy bời khách hàng";
+            return "5";
         } else {
             User user = userRepository.findByUsername(udOrdersRequest.getUserNameEmp());
             if (user != null) {
@@ -508,13 +513,13 @@ public class OrdersServiceImpl implements OrdersService {
             orders.setUserNameEmp(user.getUsername());
         }
         if (orders.getStatus() == Constants.CANCEL_STATUS) {
-            return "Đơn hàng này khách hàng đã hủy";
+            return "1";
         } else if (orders.getStatus() == Constants.SHIPPING_STATUS) {
-            return "Đơn hàng này đang được vận chuyển";
+            return "2";
         } else if (orders.getStatus() == Constants.DELIVERED_STATUS) {
-            return "Đơn hàng này đã được giao thành công";
+            return "3";
         } else if (orders.getStatus() == Constants.REFUSE_STATUS) {
-            return "Đơn hàng này khách hàng đã từ chối nhận";
+            return "4";
         } else {
             orders.setStatus(Constants.APPROVED_STATUS);
             orders.setFullName(udOrdersRequest.getFullName());
@@ -585,6 +590,16 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public long averageProcessingTime(int status) {
         return ordersRepository.calculateAverageProcessingTime(status);
+    }
+
+    //lấy tất cả đơn hàng
+    @Override
+    public List<OrdersResponse> getAllOrder(String keyword, int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Orders> orders = ordersRepository.findAllByKeyword(keyword, pageable);
+        return orders.getContent().stream()
+                .map(ordersMapper::mapToResponse)
+                .toList();
     }
 
     //------------------Thêm sửa xóa giỏ hàng ---------------//

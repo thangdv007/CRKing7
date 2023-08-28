@@ -483,7 +483,7 @@ const AddProduct = () => {
             className="bg-blue w-full h-10 flex items-center justify-center rounded-lg cursor-pointer"
             onClick={() => handleCreateProduct()}
           >
-            <span className="text-white">Thêm sản phẩm</span>
+            <span className="text-white uppercase">Thêm sản phẩm</span>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import React from 'react';
 import Chart from 'react-apexcharts';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -5,8 +6,9 @@ import Badge from '~/components/badge';
 import StatusCard from '~/components/statuscard';
 import Table from '~/components/table';
 import { RootState } from '~/redux/reducers';
-
-import statusCards from '../../assets/JsonData/status-card-data.json';
+import { toast } from 'react-toastify';
+import Api from '~/api/apis';
+import { REQUEST_API } from '~/constants/method';
 
 const chartOptions = {
   series: [
@@ -119,10 +121,63 @@ const renderOrderBody = (item: any, index: number) => (
 );
 const Dashboard = () => {
   const themeReducer = useSelector((state: RootState) => state.ThemeReducer.mode);
+  const token = useSelector((state: RootState) => state.ReducerAuth.token);
+  const [totalProductSold, setTotalProductSold] = React.useState();
+  const getTotalProductSold = async () => {
+    if (!!token) {
+      try {
+        const url = Api.getTotalSoldProduct();
+        const [res] = await Promise.all([
+          REQUEST_API({
+            url: url,
+            method: 'get',
+            token: token,
+          }),
+        ]);
+        console.log(res);
 
+        if (res.status) {
+          setTotalProductSold(res.data);
+        } else {
+          toast.error(`Có lỗi xảy ra`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+  React.useEffect(() => {
+    getTotalProductSold();
+  }, []);
+  const statusCards = [
+    {
+      icon: 'bx bx-shopping-bag',
+      title: 'Tổng số đơn hàng hoàn thành',
+      count: totalProductSold || '',
+    },
+    {
+      icon: 'bx bx-cart',
+      count: '2,001',
+      title: 'Daily visits',
+    },
+    {
+      icon: 'bx bx-dollar-circle',
+      count: '$2,632',
+      title: 'Tổng thu nhập',
+    },
+    {
+      icon: 'bx bx-receipt',
+      count: '1,711',
+      title: 'Total orders',
+    },
+  ];
   return (
     <div>
-      <h2 className="page-header">Dashboard</h2>
+      <h2 className="page-header text-xl font-bold">Trang tổng quan</h2>
       <div className="row">
         <div className="col-6">
           <div className="row">

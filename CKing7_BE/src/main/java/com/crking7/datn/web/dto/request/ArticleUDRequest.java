@@ -7,10 +7,10 @@ import java.util.List;
 @Data
 public class ArticleUDRequest {
     private String title;
-    private String titleSummary;
+    private String shortContent;
     private String content;
-    private String tag;
+    private String author;
     private long userId;
     private long categoryId;
-    private List<ArticleImageUDRequest> images;
+    private String images;
 }

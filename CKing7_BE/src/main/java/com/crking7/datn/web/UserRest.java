@@ -38,7 +38,7 @@ public class UserRest {
             if (userResponse != null){
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponse), HttpStatus.OK);
             }else {
-                return new ResponseEntity<>(ApiResponse.build(400, false, "Thành công", "Không có tài khoản này"), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(400, false, "false", "Không có tài khoản này"), HttpStatus.OK);
             }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
@@ -50,9 +50,9 @@ public class UserRest {
             if(addressRequest.getUserId() != 0){
                 AddressResponse addressResponse = addressService.createAddress(addressRequest);
 //              UserResponse userResponse = userService.getUser(addressRequest.getUserId());
-                return ResponseEntity.ok(addressResponse);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", addressResponse), HttpStatus.OK);
             }else {
-                return ResponseEntity.ok("Fail!");
+                return new ResponseEntity<>(ApiResponse.build(400, false, "false", null), HttpStatus.OK);
             }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
@@ -64,7 +64,11 @@ public class UserRest {
                                            @RequestBody AddressRequest addressRequest){
         try{
             AddressResponse addressResponse = addressService.updateAddress(addressId, addressRequest);
-            return ResponseEntity.ok(Objects.requireNonNullElse(addressResponse,"Không thành công!"));
+            if (addressResponse != null){
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", addressResponse), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(ApiResponse.build(400, false, "false", "Không có tài khoản này"), HttpStatus.OK);
+            }
         }catch (Exception e){
             return new ResponseEntity<>("Lỗi!",HttpStatus.BAD_REQUEST);
         }
@@ -73,7 +77,6 @@ public class UserRest {
     @PutMapping("/address/default/{id}")
     public ResponseEntity<?> makeDefault(@PathVariable("id") long addressId){
         try{
-
             Address address = addressRepository.findById(addressId).orElseThrow();
             address.setFocus(1);
             Address newAddress = addressRepository.save(address);
@@ -95,7 +98,7 @@ public class UserRest {
     public ResponseEntity<?> deleteAddress(@PathVariable("id") long addressId) {
         try {
             addressService.deleteAddress(addressId);
-            return ResponseEntity.ok("Đã xóa địa chỉ thành công");
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", "Đã xóa địa chỉ thành công"), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }

@@ -37,4 +37,9 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
 
     @Query("SELECT AVG(o.modifiedDate - o.createDate) FROM Orders o WHERE o.status = :status")
     long calculateAverageProcessingTime(@Param("status") int status);
+
+    @Query("SELECT o FROM Orders o WHERE o.codeOrders LIKE %:keyword% AND o.type = 1")
+    Page<Orders> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    Orders findByIdAndType(Long orderId, int type);
 }

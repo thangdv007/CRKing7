@@ -31,6 +31,13 @@ import DetailSale from '../sale/detailSale';
 import AddSale from '../sale/addSale';
 import EditSale from '../sale/editSale';
 import AddProductSale from '../sale/addProductSale';
+import Article from '../article';
+import AddArticle from '../article/addArticle';
+import DetailArticle from '../article/detailArticle';
+import EditArticle from '../article/editArticle';
+import Order from '../order';
+import DetailOrder from '../order/detailOrder';
+import EditOrder from '../order/editOrder';
 
 const Layout = () => {
   const themeReducer = useSelector((state: RootState) => state.ThemeReducer);
@@ -59,36 +66,43 @@ const Layout = () => {
       <ScrollToTopOnNavigate />
       <div className="layout__sidebar">
         <Sidebar />
-        <div className="layout__content">
-          <TopNav />
-          <div className="layout__content-main">
-            <Suspense fallback={<SuspenseContent />}>
-              <Routes>
-                <Route path={path.home} element={<Dashboard />} />
-                <Route path={path.products} element={<Product />} />
-                <Route path={path.accounts} element={<Account />} />
-                <Route path={path.addEmp} element={<AddEmp />} />
-                <Route path={path.detailAcc} element={<DetailAcc />} />
-                <Route path={path.profile} element={<Profile />} />
-                <Route path={path.editProduct} element={<EditProduct />} />
-                <Route path={path.addProduct} element={<AddProduct />} />
-                <Route path={path.detailProduct} element={<DetailProduct />} />
-                <Route path={path.categories} element={<Category />} />
-                <Route path={path.addCategory} element={<AddCategory />} />
-                <Route path={path.editCategory} element={<EditCategory />} />
-                <Route path={path.detailCategory} element={<DetailCategory />} />
-                <Route path={path.banners} element={<Banners />} />
-                <Route path={path.editBanner} element={<EditBanner />} />
-                <Route path={path.addBanner} element={<CreateBanner />} />
-                <Route path={path.detailBanner} element={<DetailBanner />} />
-                <Route path={path.sale} element={<Sale />} />
-                <Route path={path.detailSale} element={<DetailSale />} />
-                <Route path={path.addSale} element={<AddSale />} />
-                <Route path={path.editSale} element={<EditSale />} />
-                <Route path={path.addProductToSale} element={<AddProductSale />} />
-              </Routes>
-            </Suspense>
-          </div>
+      </div>
+      <div className="layout__content">
+        <TopNav />
+        <div className="layout__content-main">
+          <Suspense fallback={<SuspenseContent />}>
+            <Routes>
+              <Route path={path.home} element={<Dashboard />} />
+              <Route path={path.products} element={<Product />} />
+              <Route path={path.accounts} element={<Account />} />
+              <Route path={path.addEmp} element={<AddEmp />} />
+              <Route path={path.detailAcc} element={<DetailAcc />} />
+              <Route path={path.profile} element={<Profile />} />
+              <Route path={path.editProduct} element={<EditProduct />} />
+              <Route path={path.addProduct} element={<AddProduct />} />
+              <Route path={path.detailProduct} element={<DetailProduct />} />
+              <Route path={path.categories} element={<Category />} />
+              <Route path={path.addCategory} element={<AddCategory />} />
+              <Route path={path.editCategory} element={<EditCategory />} />
+              <Route path={path.detailCategory} element={<DetailCategory />} />
+              <Route path={path.banners} element={<Banners />} />
+              <Route path={path.editBanner} element={<EditBanner />} />
+              <Route path={path.addBanner} element={<CreateBanner />} />
+              <Route path={path.detailBanner} element={<DetailBanner />} />
+              <Route path={path.sale} element={<Sale />} />
+              <Route path={path.detailSale} element={<DetailSale />} />
+              <Route path={path.addSale} element={<AddSale />} />
+              <Route path={path.editSale} element={<EditSale />} />
+              <Route path={path.addProductToSale} element={<AddProductSale />} />
+              <Route path={path.article} element={<Article />} />
+              <Route path={path.addArticle} element={<AddArticle />} />
+              <Route path={path.detailArticle} element={<DetailArticle />} />
+              <Route path={path.editArticle} element={<EditArticle />} />
+              <Route path={path.orders} element={<Order />} />
+              <Route path={path.detailOrder} element={<DetailOrder />} />
+              <Route path={path.editOrder} element={<EditOrder />} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
     </div>

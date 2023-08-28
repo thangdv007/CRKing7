@@ -3,7 +3,7 @@ import './styles.css';
 
 interface DropdownProps {
   icon?: string;
-  badge?: string;
+  badge?: string | '';
   customToggle?: () => React.ReactNode;
   contentData?: Array<any>;
   renderItems?: (item: any, index: number) => React.ReactNode;

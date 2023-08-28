@@ -20,21 +20,24 @@ public class Article {
 	@Column
 	private String title;
 
-	@Column
-	private String titleSummary;
-	
-	@Column()
+	@Column(columnDefinition = "TEXT")
+	private String shortContent;
+
+	@Column(columnDefinition = "TEXT")
 	@Lob
 	private String content;
 
 	@Column
-	private String tag;
+	private String author;
 	
 	@Column
 	private Date createdDate;
 	
 	@Column
 	private Date modifiedDate;
+
+	@Column
+	private String image;
 
 	@Column
 	private int status;
@@ -47,7 +50,5 @@ public class Article {
 	@JoinColumn(name = "category_id")
 	private Category category;
 
-	@OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL )
-	private List<ArticleImage> articleImages;
 }
 

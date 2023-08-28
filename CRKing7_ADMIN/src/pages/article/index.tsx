@@ -6,11 +6,10 @@ import { REQUEST_API } from '~/constants/method';
 import { RootState } from '~/redux/reducers';
 import { useNavigate } from 'react-router-dom';
 import path from '~/constants/path';
-import { Product, ProductImages } from '~/types/product.type';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
 import SpinLoading from '~/components/loading/spinLoading';
 import Modal from 'react-modal';
-import { Banner } from '~/types/banner.type';
+import { Article, ImagesArticle } from '~/types/article.type';
 import { Category } from '~/types/category.type';
 
 const customStyles = {
@@ -24,34 +23,37 @@ const customStyles = {
   },
 };
 
-const Banners = () => {
+const Article = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
-  const navigate = useNavigate();
-
+  const user = useSelector((state: RootState) => state.ReducerAuth.user);
   const [page, setPage] = React.useState(0);
   const [lastPage, setLastPage] = React.useState(0);
   const [keyword, setKeyword] = React.useState('');
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [banner, setBanner] = React.useState<Banner[]>([]);
-  const [loadding, setLoading] = React.useState(false);
+  const navigate = useNavigate();
   const [categoriesMapping, setCategoriesMapping] = React.useState({});
-  const [bannerId, setBannerId] = React.useState<number>();
+  const [userMapping, setUserMapping] = React.useState({});
+  const [loadding, setLoading] = React.useState(false);
+
+  const [article, setArticle] = React.useState<Article[]>([]);
+
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [articleId, setArticleId] = React.useState<number>();
 
   const openModal = (id: number) => {
-    setBannerId(id);
+    setArticleId(id);
     setIsOpen(true);
   };
   const closeModal = () => {
     setIsOpen(false);
   };
 
-  const getAllBanner = async () => {
+  const getAllArticle = async () => {
     if (!!token) {
       try {
         setLoading(true);
         const currentPage = 0;
         setPage(currentPage);
-        const url = Api.getAllBanner(currentPage, keyword);
+        const url = Api.getAllArticle(currentPage, keyword);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -59,7 +61,6 @@ const Banners = () => {
             token: token,
           }),
         ]);
-
         if (res.status) {
           setLoading(false);
           const newData = res.data.data.map((item) => {
@@ -67,7 +68,7 @@ const Banners = () => {
               ...item,
             };
           });
-          setBanner(newData);
+          setArticle(newData);
         } else {
           setLoading(true);
           toast.error(`${res.data.data}`, {
@@ -85,7 +86,7 @@ const Banners = () => {
     }
   };
   React.useEffect(() => {
-    getAllBanner();
+    getAllArticle();
   }, []);
   const getCategory = async (id: number) => {
     if (!!token) {
@@ -98,6 +99,7 @@ const Banners = () => {
             token: token,
           }),
         ]);
+
         if (res.status) {
           const category = res.data;
           setCategoriesMapping((prevMapping) => ({
@@ -116,19 +118,55 @@ const Banners = () => {
       }
     }
   };
+  const getUser = async (id: number) => {
+    if (!!token) {
+      try {
+        const url = Api.detailAcc(id);
+        const [res] = await Promise.all([
+          REQUEST_API({
+            url: url,
+            method: 'get',
+            token: token,
+          }),
+        ]);
+        if (res.status) {
+          const user = res.data;
+          setUserMapping((prevMapping) => ({
+            ...prevMapping,
+            [user.id]: user.username,
+          }));
+        } else {
+          toast.error(`Có lỗi xảy ra`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
   React.useEffect(() => {
-    if (banner.length > 0) {
-      banner.forEach(async (item) => {
-        if (item.categoryId !== 0) {
-          await getCategory(item.categoryId);
+    if (article.length > 0) {
+      article.forEach(async (item) => {
+        if (item.userId != 0) {
+          await getUser(item.userId);
         }
       });
     }
-  }, [banner]);
-  const hideBanner = async (id: number) => {
+  }, [article]);
+  React.useEffect(() => {
+    if (article.length > 0) {
+      article.forEach(async (item) => {
+        await getCategory(item.categoryId);
+      });
+    }
+  }, [article]);
+  const hideArticle = async (id: number) => {
     if (!!token) {
       try {
-        const url = Api.hideBanner(id);
+        const url = Api.hideArticle(id);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -137,8 +175,8 @@ const Banners = () => {
           }),
         ]);
         if (res.status) {
-          getAllBanner();
-          toast.success(`${res.data}`, {
+          getAllArticle();
+          toast.success(`Bài viết đã được ẩn`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -155,10 +193,10 @@ const Banners = () => {
       }
     }
   };
-  const showBanner = async (id: number) => {
+  const showArticle = async (id: number) => {
     if (!!token) {
       try {
-        const url = Api.showBanner(id);
+        const url = Api.showArticle(id);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -167,8 +205,8 @@ const Banners = () => {
           }),
         ]);
         if (res.status) {
-          getAllBanner();
-          toast.success(`${res.data}`, {
+          getAllArticle();
+          toast.success(`Bài viết đã được hiện`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -185,10 +223,10 @@ const Banners = () => {
       }
     }
   };
-  const deleteBanner = async (id: number) => {
+  const deleteArticle = async (id: number) => {
     if (!!token) {
       try {
-        const url = Api.deleteBanner(id);
+        const url = Api.deleteArticle(id);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -199,7 +237,7 @@ const Banners = () => {
         console.log(res);
 
         if (res.status) {
-          getAllBanner();
+          getAllArticle();
           closeModal();
           toast.success(`${res.data}`, {
             position: 'top-right',
@@ -224,11 +262,12 @@ const Banners = () => {
       });
     }
   };
+
   return (
     <div className="">
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <span className="text-base font-bold">Quản lý sản phẩm</span>
+          <span className="text-base font-bold">Quản lý bài viết</span>
           <div className="flex ml-5 items-center justify-center">
             <input
               className="h-10 border-black rounded-lg pl-3"
@@ -239,14 +278,14 @@ const Banners = () => {
             <i
               className="bx bx-search text-2xl text-blue ml-3 cursor-pointer"
               onClick={() => {
-                getAllBanner(), setKeyword('');
+                getAllArticle(), setKeyword('');
               }}
             ></i>
           </div>
         </div>
         <div
           className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
-          onClick={() => navigate(path.addBanner)}
+          onClick={() => navigate(path.addArticle)}
         >
           <i className="bx bxs-plus-circle text-2xl text-white"></i>
         </div>
@@ -256,53 +295,59 @@ const Banners = () => {
         <table className="table w-full">
           <thead>
             <tr>
-              <th className="w-[5%]">Mã</th>
-              <th className="w-[15%] text-center">Tên Banner</th>
-              <th className="w-[15%] text-center">Hình ảnh</th>
+              <th className="w-[5%] text-center">id</th>
+              <th className="w-[20%] text-center">Tiêu đề</th>
+              <th className="w-[20%] text-center">Mô tả ngắn</th>
+              <th className="w-[10%] text-center">Tác giả</th>
+              <th className="w-[10%] text-center">Người tạo</th>
               <th className="w-[10%] text-center">Danh mục</th>
               <th className="w-[10%] text-center">Trạng thái</th>
-              <th className="w-[15%] text-center">Ngày tạo</th>
-              <th className="w-[15%] text-center">Ngày sửa</th>
-              <th className="w-[15%] text-center">Hành động</th>
+              <th className="w-[10%] text-center">Hành động</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {!!banner &&
-              !!banner.length &&
-              banner.map((item, i) => {
+            {!!article &&
+              !!article.length &&
+              article.map((item, i) => {
                 return (
                   <tr key={i} className="cursor-pointer">
-                    <td>{item.id}</td>
-                    <td className="text-center">{item.name}</td>
-                    <td className="">
-                      <img src={`${API_URL_IMAGE}${item?.src}`} className="w-auto h-auto object-contain" />
-                    </td>
-                    <td className="text-center">
-                      {item.categoryId === 0 ? 'Banner home' : `${categoriesMapping[item.categoryId]}`}
-                    </td>
+                    <td className="text-center">{item.id}</td>
+                    <td className="text-start">{item.title}</td>
+                    <td
+                      className="text-start max-h-[90px] line-clamp-3"
+                      dangerouslySetInnerHTML={{ __html: item?.shortContent }}
+                    ></td>
+                    <td className="text-center">{item.author}</td>
+                    <td className="text-center">{userMapping[item.userId]}</td>
+                    <td className="text-center">{categoriesMapping[item.categoryId]}</td>
                     {item.status === 1 && (
                       <td className="text-green-500">
-                        <div className="flex items-center justify-between">Hoạt động </div>
+                        <div className="flex items-center justify-between">
+                          Hoạt động{' '}
+                          <i className="bx bxs-lock text-xl text-red-500" onClick={() => hideArticle(item.id)}></i>
+                        </div>
                       </td>
                     )}
                     {item.status === 0 && (
                       <td className="text-red-500">
-                        <div className="flex items-center justify-between">Đã khóa </div>
+                        <div className="flex items-center justify-between">
+                          Đã khóa{' '}
+                          <i
+                            className="bx bxs-lock-open text-xl text-green-500"
+                            onClick={() => showArticle(item.id)}
+                          ></i>
+                        </div>
                       </td>
                     )}
-                    <td className="text-center">{item.createdDate}</td>
-                    <td className="text-center">{item.modifiedDate}</td>
                     <td className="flex flex-col items-center justify-between ">
-                      {item.status === 1 && (
-                        <i className="bx bxs-lock text-xl text-red-500" onClick={() => hideBanner(item.id)}></i>
-                      )}
-                      {item.status === 0 && (
-                        <i className="bx bxs-lock-open text-xl text-green-500" onClick={() => showBanner(item.id)}></i>
-                      )}
+                      <i
+                        className="bx bxs-show text-2xl font-semibold text-blue"
+                        onClick={() => navigate(path.detailArticle, { state: item })}
+                      ></i>
                       <i
                         className="bx bxs-pencil text-2xl font-semibold text-blue pt-2"
-                        onClick={() => navigate(path.editBanner, { state: item.id })}
+                        onClick={() => navigate(path.editArticle, { state: item.id })}
                       ></i>
                     </td>
                     <td className="">
@@ -329,7 +374,7 @@ const Banners = () => {
             </div>
             <div
               className="cursor-pointer w-[30%] h-10 rounded-md bg-red-500 flex items-center justify-center"
-              onClick={() => deleteBanner(bannerId)}
+              onClick={() => deleteArticle(articleId)}
             >
               <span>Xóa</span>
             </div>
@@ -341,4 +386,4 @@ const Banners = () => {
   );
 };
 
-export default Banners;
+export default Article;

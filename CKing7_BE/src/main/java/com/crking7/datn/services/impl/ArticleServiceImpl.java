@@ -46,11 +46,30 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public ArticleResponse getArticleAdmin(long articleId) {
+        Article article = articleRepository.findById(articleId).orElseThrow();
+        return articleMapper.mapToResponse(article);
+    }
+
+    @Override
+    public ArticleResponse getArticleByName(String title) {
+        Article article = articleRepository.findByTitle(title);
+        return articleMapper.mapToResponse(article);
+    }
+
+    @Override
     public List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-
         Page<Article> articles = articleRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
+        return articles.getContent().stream()
+                .map(articleMapper::mapToResponse)
+                .toList();
+    }
 
+    @Override
+    public List<ArticleResponse> getAllArticles(String keyword, int pageNo, int pageSize, String sortBy) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        Page<Article> articles = articleRepository.findAllByKeyword(keyword, pageable);
         return articles.getContent().stream()
                 .map(articleMapper::mapToResponse)
                 .toList();
@@ -84,62 +103,25 @@ public class ArticleServiceImpl implements ArticleService {
             articleNew.setStatus(1);
             Article articleResp = articleRepository.save(articleNew);
 
-            long articleId = articleNew.getId();
-
-            for (ArticleImageRequest a : articleRequest.getImages()) {
-                ArticleImage image = new ArticleImage();
-                image.setArticle(articleResp);
-                image.setUrl(a.getUrl());
-                articleImageRepository.save(image);
-            }
-            Article article1 = articleRepository.findById(articleId).orElseThrow();
-            List<ArticleImage> articleImages = articleImageRepository.findAllByArticle(article1);
-            article1.setArticleImages(articleImages);
-
-            return articleMapper.mapToResponse(article1);
+            return articleMapper.mapToResponse(articleResp);
         } else {
             return null;
         }
     }
 
     @Override
-    public ArticleResponse updateArticle(long id, ArticleUDRequest articleRequest) {
+    public ArticleResponse updateArticle(long id, ArticleRequest articleRequest) {
         Article article = articleRepository.findById(id).orElseThrow();
-        List<ArticleImageUDRequest> imageRequests = articleRequest.getImages();
-        if (article == null) {
-            return null;
-        }
         articleMapper.updateModel(article, articleRequest);
         Date currentDate = new Date();
         article.setModifiedDate(currentDate);
         articleRepository.save(article);
-        if (imageRequests != null) {
-            List<ArticleImage> existingImages = articleImageRepository.findAllByArticle(article);
-            List<ArticleImage> newImages = new ArrayList<>();
-            for (ArticleImageUDRequest imageRequest : imageRequests) {
-                if (imageRequest.getId() == 0) {
-                    // Nếu hình ảnh không tồn tại, tạo hình ảnh mới và liên kết nó với sản phẩm.
-                    ArticleImage newImage = new ArticleImage();
-                    newImage.setUrl(imageRequest.getUrl());
-                    newImage.setArticle(article);
-                    ArticleImage image = articleImageRepository.save(newImage);
-                    newImages.add(image);
-                } else {
-                    ArticleImage existingImage = articleImageRepository.findById(imageRequest.getId()).orElseThrow();
-                    // Nếu hình ảnh đã tồn tại, cập nhật các thuộc tính của nó.
-                    existingImage.setUrl(imageRequest.getUrl());
-                }
-            }
-            existingImages.addAll(newImages);
-        }
 
-        List<ArticleImage> articleImages = articleImageRepository.findAllByArticle(article);
-        article.setArticleImages(articleImages);
         return articleMapper.mapToResponse(article);
     }
 
     @Override
-    public ArticleResponse hideArticle(long id) {
+    public String hideArticle(long id) {
         Article article = articleRepository.findByIdAndStatus(id, Constants.ACTIVE_STATUS);
         if (article == null) {
             return null;
@@ -148,11 +130,11 @@ public class ArticleServiceImpl implements ArticleService {
         article.setModifiedDate(currentDate);
         article.setStatus(0);
         articleRepository.save(article);
-        return articleMapper.mapToResponse(article);
+        return "Bài viết đã được ẩn";
     }
 
     @Override
-    public ArticleResponse showArticle(long id) {
+    public String showArticle(long id) {
         Article article = articleRepository.findByIdAndStatus(id, Constants.INACTIVE_STATUS);
         if (article == null) {
             return null;
@@ -161,7 +143,7 @@ public class ArticleServiceImpl implements ArticleService {
         article.setModifiedDate(currentDate);
         article.setStatus(1);
         articleRepository.save(article);
-        return articleMapper.mapToResponse(article);
+        return "Bài viết đã được hiện";
     }
 
     @Override

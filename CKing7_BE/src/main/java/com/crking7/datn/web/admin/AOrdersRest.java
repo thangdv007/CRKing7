@@ -42,6 +42,21 @@ public class AOrdersRest {
             @RequestBody UDOrdersRequest udOrdersRequest) {
         try {
             Object object = ordersService.confirmOrder(udOrdersRequest);
+            if (object == "1") {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này đã được xác nhận"), HttpStatus.OK);
+            }
+            if (object == "2") {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Bạn phải kiểm tra và xác nhận đơn hàng trước khi chuyển đi"), HttpStatus.OK);
+            }
+            if (object == "3") {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này đã được giao thành công"), HttpStatus.OK);
+            }
+            if (object == "4") {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này khách hàng đã từ chối nhận"), HttpStatus.OK);
+            }
+            if (object == "5") {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này đã được hủy bời khách hàng"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", object), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
@@ -86,6 +101,18 @@ public class AOrdersRest {
             @RequestBody UDOrdersRequestAdmin udOrdersRequest) {
         try {
             String s = ordersService.updateOrder(udOrdersRequest);
+            if (Objects.equals(s, "1")) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này khách hàng đã hủy"), HttpStatus.OK);
+            }
+            if (Objects.equals(s, "2")) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này đang được vận chuyển"), HttpStatus.OK);
+            }
+            if (Objects.equals(s, "3")) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này đã được giao thành công"), HttpStatus.OK);
+            }
+            if (Objects.equals(s, "4")) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", "Đơn hàng này khách hàng đã từ chối nhận"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
@@ -129,12 +156,13 @@ public class AOrdersRest {
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
                 int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(200, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
+
     @GetMapping("/conversionRate")
     public ResponseEntity<?> conversionRate() {
         try {
@@ -144,13 +172,50 @@ public class AOrdersRest {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
+
     @GetMapping("/averageProcessingTime")
-    public ResponseEntity<?> conversionRate(@RequestParam(name = "status") int status ) {
+    public ResponseEntity<?> conversionRate(@RequestParam(name = "status") int status) {
         try {
             long l = ordersService.averageProcessingTime(status);
             return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", l), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/allOrder")
+    public ResponseEntity<?> getAllOrder(@RequestParam(required = false) String keyword,
+                                         @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                         @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                         @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+
+        try {
+            List<OrdersResponse> ordersResponses = ordersService.getAllOrder(keyword, pageNo, pageSize, sortBy);
+            if (ordersResponses != null) {
+                int total = ordersResponses.size();
+                List<Object> data = new ArrayList<>(ordersResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(200, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable(name = "id") Long orderId) {
+        try {
+            OrdersResponse ordersResponse = ordersService.getOrder(orderId);
+            if (ordersResponse != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", ordersResponse), HttpStatus.OK);
+
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, false, "Thất bại", "Có lỗi xảy ra"), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
         }
     }
 }

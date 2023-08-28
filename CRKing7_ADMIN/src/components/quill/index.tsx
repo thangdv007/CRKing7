@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import ImageResize from 'quill-image-resize-module-react';
@@ -7,54 +7,38 @@ import './styles.css';
 
 interface EditorProps {
   placeholder: string;
-}
-
-interface EditorState {
-  editorHtml: string;
+  onChange: any;
+  value: string;
 }
 
 Quill.register('modules/imageResize', ImageResize);
 
-/*
- * Simple editor component that takes placeholder text as a prop
- */
-class Editor extends Component<EditorProps, EditorState> {
-  constructor(props: EditorProps) {
-    super(props);
-    this.state = { editorHtml: '' };
-    this.handleChange = this.handleChange.bind(this);
-  }
+const Editor = (props: EditorProps) => {
+  return (
+    <ReactQuill
+      theme="snow"
+      onChange={props.onChange}
+      value={props.value}
+      modules={Editor.modules}
+      formats={Editor.formats}
+      bounds="#root"
+      placeholder={props.placeholder}
+    />
+  );
+};
 
-  handleChange(html: string) {
-    this.setState({ editorHtml: html });
-  }
-
-  render() {
-    return (
-      <ReactQuill
-        theme="snow"
-        onChange={this.handleChange}
-        value={this.state.editorHtml}
-        modules={Editor.modules}
-        formats={Editor.formats}
-        bounds="#root"
-        placeholder={this.props.placeholder}
-      />
-    );
-  }
-}
-
-/*
- * Quill modules to attach to editor
- * See https://quilljs.com/docs/modules/ for complete options
- */
 Editor.modules = {
   toolbar: [
     [{ header: '1' }, { header: '2' }, { font: [] }],
     [{ size: [] }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-    ['link', 'image', 'video'],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ script: 'sub' }, { script: 'super' }],
+    ['blockquote', 'code-block'],
+    [{ indent: '-1' }, { indent: '+1' }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ direction: 'rtl' }, { align: [] }],
+    ['link', 'image', 'video', 'formula'],
     ['clean'],
   ],
   clipboard: {
@@ -67,25 +51,27 @@ Editor.modules = {
   },
 };
 
-/*
- * Quill editor formats
- * See https://quilljs.com/docs/formats/
- */
 Editor.formats = [
-  'header',
   'font',
   'size',
   'bold',
   'italic',
   'underline',
   'strike',
+  'color',
+  'background',
+  'script',
+  'header',
   'blockquote',
-  'list',
-  'bullet',
+  'code-block',
   'indent',
+  'list',
+  'direction',
+  'align',
   'link',
   'image',
   'video',
+  'formula',
 ];
 
 export default Editor;

@@ -1,14 +1,20 @@
 package com.crking7.datn.web.admin;
 
+import com.crking7.datn.helper.ApiResponse;
+import com.crking7.datn.helper.ApiResponsePage;
 import com.crking7.datn.services.ArticleService;
 import com.crking7.datn.web.dto.request.ArticleRequest;
 import com.crking7.datn.web.dto.request.ArticleUDRequest;
 import com.crking7.datn.web.dto.request.CategoryRequest;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.web.dto.response.CategoryResponse;
+import com.crking7.datn.web.dto.response.ProductResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/article")
@@ -19,22 +25,79 @@ public class AArticleRest {
         this.articleService = articleService;
     }
 
+    @GetMapping("")
+    public ResponseEntity<?> getArticles(@RequestParam(required = false) String keyword,
+                                         @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                         @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                         @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+        try {
+            List<ArticleResponse> articleResponses = articleService.getAllArticles(keyword, pageNo, pageSize, sortBy);
+            if (articleResponses != null) {
+                int total = articleResponses.size();
+                List<Object> data = new ArrayList<>(articleResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createArticle(@RequestBody ArticleRequest articleRequest) {
         try {
             ArticleResponse articleResponse = articleService.createArticle(articleRequest);
-            return ResponseEntity.ok(articleResponse);
+            if (articleResponse != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", articleResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", "Tên bài viết đã tồn tại"), HttpStatus.OK);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getArticleAdmin(@PathVariable("id") Long articleId) {
+        try {
+            ArticleResponse articleResponse = articleService.getArticleAdmin(articleId);
+            if (articleResponse == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", articleResponse), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateArticle(@PathVariable("id") long id,
-                                           @RequestBody ArticleUDRequest articleRequest) {
+                                           @RequestBody ArticleRequest articleRequest) {
         try {
-            ArticleResponse articleResponse = articleService.updateArticle(id, articleRequest);
-            return ResponseEntity.ok(articleResponse);
+            ArticleResponse article = articleService.getArticleByName(articleRequest.getTitle());
+            ArticleResponse article2 = articleService.getArticleAdmin(id);
+            if (article != null) {
+                if (article2 != null && article2.getId() == article.getId()) {
+                    ArticleResponse articleResponse = articleService.updateArticle(id, articleRequest);
+                    if (articleResponse != null) {
+                        return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", articleResponse), HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Cập nhật không thành công"), HttpStatus.OK);
+                    }
+                } else {
+                    return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Tên danh mục đã tồn tại"), HttpStatus.OK);
+                }
+            } else {
+                ArticleResponse articleResponse = articleService.updateArticle(id, articleRequest);
+
+                if (articleResponse != null) {
+                    return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", articleResponse), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Cập nhật không thành công"), HttpStatus.OK);
+                }
+            }
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -43,11 +106,8 @@ public class AArticleRest {
     @PutMapping("/hide/{id}")
     public ResponseEntity<?> hideArticle(@PathVariable("id") long id) {
         try {
-            ArticleResponse articleResponse = articleService.hideArticle(id);
-            if (articleResponse == null) {
-                return new ResponseEntity<>("Không tìm thấy bài viết", HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>("Bài viết đã được ẩn", HttpStatus.OK);
+            String s = articleService.hideArticle(id);
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -56,11 +116,8 @@ public class AArticleRest {
     @PutMapping("/show/{id}")
     public ResponseEntity<?> showArticle(@PathVariable("id") long id) {
         try {
-            ArticleResponse articleResponse = articleService.showArticle(id);
-            if (articleResponse == null) {
-                return new ResponseEntity<>("Không tìm thấy Bài viết", HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>("Bài viết đã được hiện", HttpStatus.OK);
+            String s = articleService.showArticle(id);
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -70,7 +127,7 @@ public class AArticleRest {
     public ResponseEntity<?> deleteArticle(@PathVariable(name = "id") long id) {
         try {
             articleService.delete(id);
-            return ResponseEntity.ok("Xóa bài viết thành công!");
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", "Xóa bài viết thành công!"), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xóa bài viết không thành công! Lỗi " + e.getMessage());
         }
@@ -80,7 +137,7 @@ public class AArticleRest {
     public ResponseEntity<?> deleteArticleImage(@PathVariable(name = "id") long articleImageId) {
         try {
             articleService.deleteImage(articleImageId);
-            return ResponseEntity.ok("Xóa ảnh thành công!");
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", "Xóa ảnh thành công!"), HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Xóa ảnh không thành công! Lỗi " + e.getMessage());
         }

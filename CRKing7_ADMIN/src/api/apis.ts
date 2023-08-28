@@ -48,5 +48,28 @@ const Api = {
   showBanner : (id) => API_URL +`/api/admin/banner/showBanner/${id}`,
   deleteBanner : (id) => API_URL +`/api/admin/banner/delete/${id}`,
   detailBanner: (id) => API_URL + `/api/admin/banner/${id}`,
+  //article
+  getAllArticle: (page, keyword) => API_URL + `/api/admin/article?page=${page}&keyword=${keyword}`,
+  createArticle : () => API_URL +`/api/admin/article/create`,
+  updateArticle : (id) => API_URL +`/api/admin/article/update/${id}`,
+  hideArticle : (id) => API_URL +`/api/admin/article/hide/${id}`,
+  showArticle : (id) => API_URL +`/api/admin/article/show/${id}`,
+  deleteArticle : (id) => API_URL +`/api/admin/article/delete/${id}`,
+  detailArticle: (id) => API_URL + `/api/admin/article/${id}`,
+  //order
+  getAllOrders: (page, keyword) => API_URL + `/api/admin/order/allOrder?page=${page}&keyword=${keyword}`,
+  confirmOrder: () => API_URL + `/api/admin/order/confirm`,
+  shippingOrder: () => API_URL + `/api/admin/order/shipping`,
+  successOrder: () => API_URL + `/api/admin/order/success`,
+  cancelOrder: () => API_URL + `/api/admin/order/empcancel`,
+  upadteOrder: () => API_URL + `/api/admin/order/update`,
+  getOrder: (id) => API_URL + `/api/admin/order/${id}`,
+  //thông báo
+  getNotification: () => API_URL + `/api/admin/load-notification`,
+  readNotification: (id) => API_URL + `/api/admin/read-notification?id=${id}`,
+  pushNotification: () => API_URL + `/api/admin/push-notification`,
+  //thống kê
+  getTotalSoldProduct: () => API_URL +`/api/admin/order/totalSold`,
+  countOrders: () => API_URL + `/api/admin/order/countOrders`,
 }
 export default Api;

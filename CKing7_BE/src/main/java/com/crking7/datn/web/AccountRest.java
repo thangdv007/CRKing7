@@ -92,7 +92,7 @@ public class AccountRest {
             if (userResponse != null) {
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponse), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Đăng ký không thành công", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Đăng kí không thành công"), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -105,9 +105,9 @@ public class AccountRest {
         try {
             String changePasswordResult = userService.changePassword(userId, passwordRequest);
             if (changePasswordResult.equals("Thay đổi mật khẩu thành công")) {
-                return new ResponseEntity<>(ApiResponse.build(200, true, changePasswordResult, changePasswordResult), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", changePasswordResult), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Thay đổi mật khẩu không thành công", changePasswordResult), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(200, false, "Thất bại", changePasswordResult), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -129,7 +129,7 @@ public class AccountRest {
             String s = userService.forgotPassword(username);
             UserResponse user = userService.findByUserName(username);
             if(user == null){
-                return new ResponseEntity<>(ApiResponse.build(201, false, "Thành công", s), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", s), HttpStatus.OK);
             }else {
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
             }
@@ -145,7 +145,7 @@ public class AccountRest {
             if (s != null) {
                 return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", s), HttpStatus.OK);
             }else {
-                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", "Không thành công"), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Không thành công"), HttpStatus.OK);
             }
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
