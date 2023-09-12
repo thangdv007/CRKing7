@@ -72,6 +72,9 @@ public class Orders {
     private Date shipDate;
 
     @Column
+    private Date orderDate;
+
+    @Column
     private Date createDate;
 
     @Column

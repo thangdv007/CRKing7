@@ -44,6 +44,19 @@ public class UserRest {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }
+    @GetMapping("/address/{id}")
+    public ResponseEntity<?> get(@PathVariable("id") long userId){
+        try{
+            List<AddressResponse> addressResponses = addressService.getAddressByUser(userId);
+            if (addressResponses != null){
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", addressResponses), HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "false", null), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
+        }
+    }
     @PostMapping("/address/create")
     public ResponseEntity<?> newAddress(@RequestBody AddressRequest addressRequest){
         try{

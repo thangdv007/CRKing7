@@ -25,7 +25,9 @@ const EditProduct = () => {
   const [category, setCategory] = React.useState<Category[]>([]);
   const [selectedImages, setSelectedImages] = React.useState<File[]>([]);
   const [categoryId, setCategoryId] = React.useState();
-  const [addVariants, setAddVariants] = React.useState([{ color: '', size: '', quantity: '' }]);
+  const [addVariants, setAddVariants] = React.useState([
+    { id: '', color: '', sizes: [{ id: '', size: '', quantity: '' }] },
+  ]);
   const [color, setColor] = React.useState('');
   const [size, setSize] = React.useState('');
   const [colorId, setColorId] = React.useState();
@@ -51,6 +53,7 @@ const EditProduct = () => {
       for (const color of Object.values(product.colors)) {
         setColorId(color.id);
         setColor(color.value);
+        const sizes = [];
         if (color.sizes) {
           // Lặp qua từng kích thước của màu đó
           for (const size of Object.values(color.sizes)) {
@@ -58,67 +61,78 @@ const EditProduct = () => {
             setSize(size.value);
             setQuantity(size.total);
             // Tạo biến thể từ thông tin màu, kích thước và số lượng
-            const variant = {
-              color: color.value,
-              size: size.value,
-              quantity: size.total,
-            };
-            newAddVariants.push(variant);
+            sizes.push({ id: size.id, size: size.value, quantity: size.total });
           }
         }
+        const variant = {
+          id: color.id,
+          color: color.value,
+          sizes: sizes,
+        };
+        newAddVariants.push(variant);
       }
     }
     setAddVariants(newAddVariants);
   }, [product]);
-  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>, index) => {
-    setColor(event.target.value);
-    const newVariants = [...addVariants];
-    newVariants[index].color = event.target.value;
-    setAddVariants(newVariants);
-  };
-
-  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>, index) => {
-    setSize(event.target.value);
-    const newVariants = [...addVariants];
-    newVariants[index].size = event.target.value;
-    setAddVariants(newVariants);
-  };
-  const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index) => {
-    const newQuantity = parseInt(event.target.value, 10);
-    setQuantity(newQuantity);
-    const newVariants = [...addVariants];
-    newVariants[index].quantity = event.target.value;
-    setAddVariants(newVariants);
-  };
-  const handleaddVariants = (index) => {
-    const newSection = {
-      color: '',
-      size: '',
-      quantity: '',
-    };
+  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>, colorIndex) => {
+    const newColor = event.target.value;
+    setColor(newColor);
     setAddVariants((prevVariants) => {
       const newVariants = [...prevVariants];
-      newVariants.splice(index + 1, 0, newSection);
+      newVariants[colorIndex].color = newColor;
       return newVariants;
     });
   };
-  const handleRemoveVariant = (index) => {
-    if (addVariants.length > 1) {
-      setAddVariants((prevVariants) => {
-        const newVariants = [...prevVariants];
-        newVariants.splice(index, 1);
-        return newVariants;
-      });
-    } else {
-      setAddVariants((prevVariants) => {
-        const newVariants = [...prevVariants];
-        newVariants[index].color = '';
-        newVariants[index].size = '';
-        newVariants[index].quantity = '';
-        return newVariants;
-      });
-    }
+
+  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>, colorIndex, sizeIndex) => {
+    const newSize = event.target.value;
+    setSize(newSize);
+    setAddVariants((prevVariants) => {
+      const newVariants = [...prevVariants];
+      newVariants[colorIndex].sizes[sizeIndex].size = newSize;
+      return newVariants;
+    });
   };
+
+  const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, colorIndex, sizeIndex) => {
+    const newQuantity = event.target.value;
+    setQuantity(Number(newQuantity));
+    setAddVariants((prevVariants) => {
+      const newVariants = [...prevVariants];
+      newVariants[colorIndex].sizes[sizeIndex].quantity = newQuantity;
+      return newVariants;
+    });
+  };
+
+  const handleAddSize = (colorIndex) => {
+    setAddVariants((prevVariants) => {
+      const newVariants = [...prevVariants];
+      newVariants[colorIndex].sizes.push({ size: '', quantity: '' });
+      return newVariants;
+    });
+  };
+
+  const handleRemoveSize = (colorIndex, sizeIndex) => {
+    setAddVariants((prevVariants) => {
+      const newVariants = [...prevVariants];
+      newVariants[colorIndex].sizes.splice(sizeIndex, 1);
+      return newVariants;
+    });
+  };
+  const handleAddColor = () => {
+    if (addVariants.length > 0 && addVariants[addVariants.length - 1].color === '') {
+      return;
+    }
+    setAddVariants((prevVariants) => [...prevVariants, { color: '', sizes: [{ size: '', quantity: '' }] }]);
+  };
+  const handleRemoveColor = (colorIndex) => {
+    setAddVariants((prevVariants) => {
+      const newVariants = [...prevVariants];
+      newVariants.splice(colorIndex, 1);
+      return newVariants;
+    });
+  };
+
   const refInputImage = React.useRef<HTMLInputElement>(null);
   const handleUpload = () => {
     refInputImage.current?.click();
@@ -178,16 +192,15 @@ const EditProduct = () => {
   }, []);
 
   const colorsData = addVariants.map((item) => ({
-    id: colorId,
+    id: item.id,
     value: item.color,
-    sizes: [
-      {
-        id: sizeId,
-        value: item.size,
-        total: parseInt(item.quantity, 10),
-      },
-    ],
+    sizes: item.sizes.map((sizeItem) => ({
+      id: sizeItem.id,
+      value: sizeItem.size,
+      total: parseInt(sizeItem.quantity, 10),
+    })),
   }));
+
   const imagesData = selectedImages.map((item, i) => ({
     id: imageId[i],
     url: item.name,
@@ -258,14 +271,6 @@ const EditProduct = () => {
         });
         return;
       }
-      if (!quantity) {
-        toast.error(`Vui lòng nhập số lượng`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        return;
-      }
       if (isNaN(Number(quantity))) {
         toast.error(`Số lượng không hợp lệ`, {
           position: 'top-right',
@@ -288,11 +293,12 @@ const EditProduct = () => {
         description: description,
         material: material,
         price: price,
-        categoryId: categoryId,
+        categoryId: Number(categoryId),
         userId: user.id,
         colors: colorsData,
         images: imagesData,
       };
+
       try {
         const url = Api.updateProduct();
         const [res] = await Promise.all([
@@ -430,7 +436,7 @@ const EditProduct = () => {
         <div className="w-[70%] flex flex-col border rounded-md p-5">
           <span className="text-lg font-semibold text-blue">Hình ảnh</span>
           <div className="w-full h-[1px] bg-black"></div>
-          <div className="w-full h-[170px] border-black border border-dashed rounded-lg mt-5">
+          <div className="w-full h-auto border-black border border-dashed rounded-lg mt-5 p-3">
             <input
               className="hidden"
               type="file"
@@ -439,24 +445,22 @@ const EditProduct = () => {
               ref={refInputImage}
               onChange={onFileChange}
             />
-            <div className="flex items-center justify-around cursor-pointer">
+            <div className="grid grid-cols-4 gap-4 items-center justify-around cursor-pointer">
               {selectedImages.map((image, index) => (
                 <div key={index} className="relative">
-                  <img src={`${API_URL_IMAGE}${image.name}`} className="w-40 h-40 object-contain pt-2" />
+                  <img src={`${API_URL_IMAGE}${image.name}`} className="w-40 h-40 object-contain" />
                   <div
                     onClick={() => handleRemoveImage(index)}
-                    className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-[5%] right-[0]"
+                    className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-[0%] right-[0]"
                   >
                     <img src={Images.iconX} className="w-[10px] h-[10px]" />
                   </div>
                 </div>
               ))}
-              {selectedImages.length < 4 && (
-                <div onClick={handleUpload} className="flex flex-col items-center justify-center">
-                  <img src={Images.chooseImage} className="w-[120px] h-[120px] object-contain pt-2" />
-                  <span>Chọn ảnh để tải lên</span>
-                </div>
-              )}
+              <div onClick={handleUpload} className="flex flex-col items-center justify-center">
+                <img src={Images.chooseImage} className="w-[120px] h-[120px] object-contain" />
+                <span>Chọn ảnh để tải lên</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center justify-center mt-5">
@@ -495,69 +499,69 @@ const EditProduct = () => {
         <div className="w-[70%] flex flex-col border rounded-md p-5">
           <span className="text-lg font-semibold text-blue">Chi tiết</span>
           <div className="w-full h-[1px] bg-black"></div>
-          {!!addVariants &&
-            !!addVariants.length &&
-            addVariants.map((item, i) => (
-              <div className="flex mt-3" key={i}>
-                <div className="">
-                  <label htmlFor={`color-${i}`} className="block font-medium mb-1 cursor-pointer">
-                    Màu sắc:
-                  </label>
-                  <input
-                    type="text"
-                    id={`color-${i}`}
-                    value={item.color}
-                    onChange={(e) => handleColorChange(e, i)}
-                    className="p-2 border border-black rounded-md w-40"
-                  />
+          {addVariants.map((color, colorIndex) => (
+            <div className="flex mt-3" key={colorIndex}>
+              <div className="">
+                <label htmlFor={`color-${colorIndex}`} className="block font-medium mb-1 cursor-pointer">
+                  Màu sắc:
+                </label>
+                <input
+                  type="text"
+                  id={`color-${colorIndex}`}
+                  value={color.color}
+                  onChange={(e) => handleColorChange(e, colorIndex)}
+                  className="p-2 border border-black rounded-md w-40"
+                />
+              </div>
+              <div className="ml-3">
+                <div className="flex items-center">
+                  <label className="block font-medium cursor-pointer w-40">Kích thước:</label>
+                  <label className="block font-medium cursor-pointer w-40 ml-3">Số lượng:</label>
                 </div>
-                {color && (
-                  <div className="ml-4">
-                    <label htmlFor={`size-${i}`} className="block font-medium mb-1 cursor-pointer">
-                      Kích thước:
-                    </label>
+                {color.sizes.map((size, sizeIndex) => (
+                  <div key={sizeIndex} className="mt-1">
                     <input
                       type="text"
-                      id={`size-${i}`}
-                      value={item.size}
-                      onChange={(e) => handleSizeChange(e, i)}
+                      value={size.size}
+                      onChange={(e) => handleSizeChange(e, colorIndex, sizeIndex)}
                       className="p-2 border border-black rounded-md w-40"
                     />
-                  </div>
-                )}
-                {size && color && (
-                  <div className="ml-4">
-                    <label htmlFor={`quantity-${i}`} className="block font-medium mb-1 cursor-pointer">
-                      Số lượng:
-                    </label>
                     <input
-                      id={`quantity-${i}`}
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(e, i)}
-                      className="p-2 border border-black rounded-md w-16"
-                      inputMode="numeric" // Đặt kiểu nhập liệu là số
-                      pattern="[0-9]*"
+                      type="text"
+                      value={size.quantity}
+                      onChange={(e) => handleQuantityChange(e, colorIndex, sizeIndex)}
+                      className="p-2 border border-black rounded-md w-40 ml-3"
                     />
-                  </div>
-                )}
-                {size && color && quantity && (
-                  <div className="flex items-end justify-center ml-4">
-                    <div
-                      className="bg-blue cursor-pointer text-white px-4 rounded-md flex items-center justify-center"
-                      onClick={() => handleaddVariants(i)}
+                    <button
+                      className="bg-red-500 text-white px-4 rounded-md ml-3"
+                      onClick={() => handleRemoveSize(colorIndex, sizeIndex)}
                     >
-                      <span>Thêm</span>
-                    </div>
-                    <div
-                      className="cursor-pointer ml-4 bg-red-500 text-white px-4 rounded-md flex items-center justify-center"
-                      onClick={() => handleRemoveVariant(i)}
-                    >
-                      <span>Xóa</span>
-                    </div>
+                      Xóa
+                    </button>
                   </div>
-                )}
+                ))}
+                <button
+                  className="bg-blue cursor-pointer text-white px-4 mt-2 rounded-md"
+                  onClick={() => handleAddSize(colorIndex)}
+                >
+                  Thêm kích thước
+                </button>
               </div>
-            ))}
+              <div className="ml-4">
+                <button
+                  className="bg-red-500 cursor-pointer text-white px-4 rounded-md"
+                  onClick={() => handleRemoveColor(colorIndex)}
+                >
+                  Xóa Màu sắc
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="mt-3">
+            <button className="bg-blue cursor-pointer text-white px-4 rounded-md" onClick={handleAddColor}>
+              Thêm Màu sắc
+            </button>
+          </div>
           <div className=""></div>
         </div>
         {/* Bên trái */}

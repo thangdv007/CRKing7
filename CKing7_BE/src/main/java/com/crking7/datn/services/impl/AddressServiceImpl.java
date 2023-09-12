@@ -1,14 +1,19 @@
 package com.crking7.datn.services.impl;
 
+import com.crking7.datn.models.Article;
+import com.crking7.datn.models.Orders;
+import com.crking7.datn.models.User;
 import com.crking7.datn.repositories.AddressRepository;
 import com.crking7.datn.web.dto.request.AddressRequest;
 import com.crking7.datn.web.dto.response.AddressResponse;
 import com.crking7.datn.mapper.AddressMapper;
 import com.crking7.datn.models.Address;
 import com.crking7.datn.services.AddressService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class AddressServiceImpl implements AddressService {
@@ -20,6 +25,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional
     public AddressResponse createAddress(AddressRequest addressRequest) {
         Address address = addressMapper.mapToModel(addressRequest);
         address.setStatus(1);
@@ -46,4 +52,11 @@ public class AddressServiceImpl implements AddressService {
         addressRepository.delete(address);
     }
 
+    @Override
+    public List<AddressResponse> getAddressByUser(long userId) {
+        List<Address> addresses = addressRepository.findByUserId(userId);
+        return addresses.stream()
+                .map(addressMapper::mapToResponse)
+                .toList();
+    }
 }

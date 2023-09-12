@@ -13,8 +13,10 @@ public interface ArticleService {
 
     ArticleResponse getArticleByName(String title);
 
-    List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy);
+    List<ArticleResponse> getRelatedArticles(long categoryId);
 
+    List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy);
+    List<ArticleResponse> getArticlesHome();
     List<ArticleResponse> getAllArticles(String keyword, int pageNo, int pageSize, String sortBy);
 
     List<ArticleResponse> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId);

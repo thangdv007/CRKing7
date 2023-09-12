@@ -39,7 +39,6 @@ const App = () => {
       <Routes>
         <Route path={path.login} element={<Login />} />
         <Route path={path.forgotpass} element={<ForgotPassword />} />
-
         <Route path="*" element={!token ? <Navigate to={path.login} replace /> : <Layout />} />
       </Routes>
     </Router>

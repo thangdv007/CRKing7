@@ -6,6 +6,7 @@ import com.crking7.datn.models.Orders;
 import com.crking7.datn.repositories.OrdersRepository;
 import com.crking7.datn.services.OrdersService;
 import com.crking7.datn.utils.HMACUtil;
+import com.crking7.datn.utils.Utils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -49,10 +50,13 @@ public class ZaloPayPaymentController {
 
         Orders orders = ordersRepository.findById(orderId).orElseThrow();
         long amount = (totalOrderAmount(orders) + orders.getShippingFee());
+        String codeOrders = Utils.getRandomNumber(8);
+        orders.setCodeOrders(codeOrders);
+        ordersRepository.save(orders);
         String appuser = orders.getUser().getUsername();
         Map<String, Object> zalopay_Params = new HashMap<>();
         zalopay_Params.put("appid", ZaloPayConfig.APP_ID);
-        zalopay_Params.put("apptransid", getCurrentTimeString("yyMMdd") + "_" + orders.getCodeOrders());
+        zalopay_Params.put("apptransid", getCurrentTimeString("yyMMdd") + "_" + codeOrders);
         zalopay_Params.put("apptime", System.currentTimeMillis());
         zalopay_Params.put("appuser", appuser);
         zalopay_Params.put("amount", amount);

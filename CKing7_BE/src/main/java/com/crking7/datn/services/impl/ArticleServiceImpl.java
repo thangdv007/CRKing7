@@ -59,7 +59,10 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Article> articles = articleRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
         return articles.getContent().stream()
                 .map(articleMapper::mapToResponse)
@@ -67,8 +70,19 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public List<ArticleResponse> getRelatedArticles(long categoryId) {
+        List<Article> articles = articleRepository.findRelatedArticle(categoryId, 5);
+        return articles.stream()
+                .map(articleMapper::mapToResponse)
+                .toList();
+    }
+
+    @Override
     public List<ArticleResponse> getAllArticles(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Article> articles = articleRepository.findAllByKeyword(keyword, pageable);
         return articles.getContent().stream()
                 .map(articleMapper::mapToResponse)
@@ -76,12 +90,21 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
+    public List<ArticleResponse> getArticlesHome() {
+        List<Article> articles = articleRepository.findByNewest();
+        return articles.stream()
+                .map(articleMapper::mapToResponse)
+                .toList();
+    }
+
+    @Override
     public List<ArticleResponse> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId) {
         Category category = categoryRepository.findByStatusAndIdAndType(Constants.ACTIVE_STATUS, categoryId, Constants.ARTICLE_TYPE);
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Article> articles = articleRepository.findAllByCategoryAndStatus(pageable, category, Constants.ACTIVE_STATUS);
-
         if (!articles.isEmpty()) {
             return articles.getContent().stream()
                     .map(articleMapper::mapToResponse)

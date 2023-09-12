@@ -10,6 +10,7 @@ public interface CategoryService {
     CategoryResponse getCategoryByName(String title);
     List<CategoryResponse> getAllCategory(String keyword, int pageNo, int pageSize, String sortBy);
     List<CategoryResponse> getCategoriesByType(int type);
+    List<CategoryResponse> getCategoriesByParentCategory(Long parentId);
     CategoryResponse getCategoryById (long id);
     List<CategoryResponse> getParentCategory();
     CategoryResponse getCategoryAdmin (long id);

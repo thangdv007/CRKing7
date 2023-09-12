@@ -10,6 +10,7 @@ import com.crking7.datn.utils.Utils;
 import com.crking7.datn.mapper.ProductImageMapper;
 import com.crking7.datn.mapper.SizeMapper;
 import com.crking7.datn.web.dto.request.*;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
 import jakarta.transaction.Transactional;
 import org.hibernate.Hibernate;
@@ -20,13 +21,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.ParseException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final ProductMapper productMapper;
     private final SizeMapper sizeMapper;
     private final ColorMapper colorMapper;
@@ -40,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     public ProductServiceImpl(ProductRepository productRepository,
+                              UserRepository userRepository,
                               ProductMapper productMapper,
                               SizeMapper sizeMapper,
                               ColorMapper colorMapper,
@@ -51,6 +54,7 @@ public class ProductServiceImpl implements ProductService {
                               ProductImageRepository productImageRepository,
                               Utils utils) {
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
         this.productMapper = productMapper;
         this.sizeMapper = sizeMapper;
         this.colorMapper = colorMapper;
@@ -75,6 +79,55 @@ public class ProductServiceImpl implements ProductService {
                     .toList();
         }
     }
+
+    @Override
+    @Transactional
+    public List<ProductResponse> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice, Long categoryId, int pageNo, int pageSize, String sortBy, boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+
+        // Nếu danh sách rỗng, tạo một danh sách chứa chuỗi rỗng để tránh null
+        if (valueSize == null || valueSize.isEmpty()) {
+            valueSize = Collections.singletonList("");
+        }
+
+        if (valueColor == null || valueColor.isEmpty()) {
+            valueColor = Collections.singletonList("");
+        }
+
+        List<ProductResponse> productResponses = new ArrayList<>();
+        Set<Long> visitedProductIds = new HashSet<>(); // Sử dụng Set để theo dõi sản phẩm đã xuất hiện
+
+        // Lặp qua từng giá trị trong danh sách valueSize và valueColor
+        for (String size : valueSize) {
+            for (String color : valueColor) {
+                Page<Product> products = productRepository.getAllProducts(
+                        size.isEmpty() ? null : size,
+                        color.isEmpty() ? null : color,
+                        minPrice,
+                        maxPrice,
+                        categoryId,
+                        pageable
+                );
+
+                for (Product product : products) {
+                    if (!visitedProductIds.contains(product.getId())) {
+                        ProductResponse response = productMapper.mapModelToResponse(product);
+                        productResponses.add(response);
+                        visitedProductIds.add(product.getId());
+                    }
+                }
+            }
+        }
+
+        return productResponses;
+    }
+
+
+
 
     @Override
     public ProductResponse getProduct(long productId) {
@@ -114,8 +167,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Product> products = productRepository.searchAllByKeyword(keyword, pageable);
+        if(products == null){
+            return null;
+        }
         return products.getContent().stream()
                 .map(productMapper::mapModelToResponse)
                 .toList();
@@ -348,12 +407,16 @@ public class ProductServiceImpl implements ProductService {
         List<ColorUDRequest> colorRequests = productRequest.getColors();
         List<Color> colors = colorRepository.findByProduct(product);
         List<ProductImage> productImages = productImageRepository.findByProduct(product);
+        Category category = categoryRepository.findById(productRequest.getCategoryId()).orElseThrow();
+        User user = userRepository.findById(productRequest.getUserId()).orElseThrow();
         // Lưu trữ giá salePrice hiện tại của sản phẩm
         int currentSalePrice = product.getSalePrice();
         if (product == null) {
             return null;
         }
         productMapper.updateModel2(product, productRequest);
+        product.setProductCategory(category);
+        product.setProductAuthor(user);
         product.setSalePrice(currentSalePrice);
         Date currentDate = new Date();
         product.setModifiedDate(currentDate);
@@ -468,6 +531,26 @@ public class ProductServiceImpl implements ProductService {
                     .map(product -> productMapper.mapModelToResponse(product))
                     .toList();
         }
+    }
+
+    @Override
+    @Transactional
+    public List<ProductResponse> getRandomProducts() {
+        List<Product> products = productRepository.getRandomProducts();
+//        if (products.isEmpty()) {
+//            return null;
+//        } else {
+//            for (Product product : products) {
+//                Hibernate.initialize(product.getColors()); // Khởi tạo collection colors trong phiên làm việc hiện tại
+//                Hibernate.initialize(product.getProductImages()); // Khởi tạo collection productImages trong phiên làm việc hiện tại
+//            }
+//            return products.stream()
+//                    .map(product -> productMapper.mapModelToResponse(product))
+//                    .toList();
+//        }
+        return products.stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
     }
 
     @Override

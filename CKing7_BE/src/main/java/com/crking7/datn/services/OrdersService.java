@@ -10,6 +10,8 @@ import java.util.List;
 public interface OrdersService {
     OrdersResponse getOrderByType(long userId, int type);
 
+    List<OrdersResponse> getOrders(long userId, int type);
+
     OrdersResponse getOrder(long orderId);
 
     List<OrdersResponse> getAllOrder(String keyword, int pageNo, int pageSize, String sortBy);
@@ -19,6 +21,8 @@ public interface OrdersService {
     Object deleteItemFromCart(Long orderItemId);
 
     Object delete1Item(Long orderItemId);
+
+    Object plus1Item(Long orderItemId);
 
     Object checkCreateOrder(Long orderId);
 

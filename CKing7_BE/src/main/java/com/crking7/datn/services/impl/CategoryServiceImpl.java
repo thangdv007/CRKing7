@@ -165,6 +165,18 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryResponse> getCategoriesByParentCategory(Long parentId) {
+        List<Category> categories = categoryRepository.findByParentCategoryId(parentId);
+        if (!categories.isEmpty()) {
+            return categories.stream()
+                    .map(categoryMapper::mapModelToResponse)
+                    .toList();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public CategoryResponse updateCategory(long id, CategoryRequest categoryRequest) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
         if (category == null) {

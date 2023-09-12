@@ -6,6 +6,8 @@ import com.crking7.datn.models.OrderItem;
 import com.crking7.datn.models.Orders;
 import com.crking7.datn.repositories.OrdersRepository;
 import com.crking7.datn.services.OrdersService;
+import com.crking7.datn.utils.Utils;
+import com.crking7.datn.web.dto.request.OrdersRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,8 +40,10 @@ public class VnPayController {
 
         Orders orders = ordersRepository.findById(orderId).orElseThrow();
         String orderType = "other";
+        String codeOrders = Utils.getRandomNumber(8);
+        orders.setCodeOrders(codeOrders);
+        ordersRepository.save(orders);
         long vnp_Amount = (totalOrderAmount(orders) + orders.getShippingFee())* 100L;
-        String vnp_TxnRef = orders.getCodeOrders();
         String vnp_IpAddr = VnpayConfig.getIpAddress();
 
         String vnp_TmnCode = VnpayConfig.vnp_TmnCode;
@@ -54,8 +58,8 @@ public class VnPayController {
         if (bankCode != null && !bankCode.isEmpty()) {
             vnp_Params.put("vnp_BankCode", bankCode);
         }
-        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_TxnRef", codeOrders);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + codeOrders);
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", language);
@@ -137,12 +141,12 @@ public class VnPayController {
             // "00" là mã trả về cho thanh toán thành công
             orders.setIsCheckout(true);
             orders.setPaymentMethod("vnPay");
-
             // Lưu thông tin vào cơ sở dữ liệu
             ordersRepository.save(orders);
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công" , response), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(ApiResponse.build(200, false, "Thành công" , response), HttpStatus.OK);
         }
-
-        return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công" , response), HttpStatus.OK);
     }
 
     private int totalOrderAmount(Orders orders) {

@@ -44,7 +44,6 @@ public class AArticleRest {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }
-
     @PostMapping("/create")
     public ResponseEntity<?> createArticle(@RequestBody ArticleRequest articleRequest) {
         try {

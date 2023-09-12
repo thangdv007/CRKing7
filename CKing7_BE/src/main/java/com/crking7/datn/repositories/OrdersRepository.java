@@ -42,4 +42,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     Page<Orders> findAllByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     Orders findByIdAndType(Long orderId, int type);
+
+    List<Orders> findALlByUserAndType(User user, int type);
 }

@@ -77,6 +77,16 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional
+    public List<OrdersResponse> getOrders(long userId, int type) {
+        User user = userRepository.findById(userId).orElseThrow();
+        List<Orders> orders = ordersRepository.findALlByUserAndType(user, type);
+        return orders.stream()
+                .map(ordersMapper::mapToResponse)
+                .toList();
+    }
+
+    @Override
     public OrdersResponse getOrder(long orderId) {
         Orders orders = ordersRepository.findByIdAndType(orderId, Constants.ORDERS_TYPE);
         return ordersMapper.mapToResponse(orders);
@@ -100,7 +110,7 @@ public class OrdersServiceImpl implements OrdersService {
                         size.getValue(),
                         size.getTotal()
                 );
-            }else if(size.getTotal() == 0) {
+            } else if (size.getTotal() == 0) {
                 return "Size này đang hết hàng vui lòng chọn sản phẩm khác";
             } else {
                 orderItemRequest.setSellPrice(product.getSalePrice());
@@ -124,9 +134,22 @@ public class OrdersServiceImpl implements OrdersService {
                         orderItemRepository.save(orderItem);
                     } else {
                         // Có giỏ hàng và sản phẩm đó đã có
-                        checkOrderItem.setQuantity(orderItemRequest.getQuantity() + checkOrderItem.getQuantity());
-                        if (checkOrderItem.getSellPrice() != orderItemRequest.getSellPrice()) {
-                            checkOrderItem.setSellPrice(orderItemRequest.getSellPrice());
+                        if (!checkOrderItem.getValueColor().equals(color.getValue()) || !checkOrderItem.getValueSize().equals(size.getValue())) {
+                            // Nếu sản phẩm đã có nhưng màu sắc hoặc kích thước khác, thêm sản phẩm mới
+                            OrderItem newOrderItem = new OrderItem();
+                            newOrderItem.setProductName(orderItemRequest.getProductName());
+                            newOrderItem.setQuantity(orderItemRequest.getQuantity());
+                            newOrderItem.setSellPrice(orderItemRequest.getSellPrice());
+                            newOrderItem.setOrders(checkOrders);
+                            newOrderItem.setValueColor(orderItemRequest.getValueColor());
+                            newOrderItem.setValueSize(orderItemRequest.getValueSize());
+                            orderItemRepository.save(newOrderItem);
+                        } else {
+                            // Có giỏ hàng và sản phẩm đó đã có với màu sắc và kích thước giống nhau
+                            checkOrderItem.setQuantity(orderItemRequest.getQuantity() + checkOrderItem.getQuantity());
+                            if (checkOrderItem.getSellPrice() != orderItemRequest.getSellPrice()) {
+                                checkOrderItem.setSellPrice(orderItemRequest.getSellPrice());
+                            }
                             orderItemRepository.save(checkOrderItem);
                         }
                     }
@@ -199,13 +222,42 @@ public class OrdersServiceImpl implements OrdersService {
         }
     }
 
+    //cộng 1 sản phẩm
+    @Override
+    @Transactional
+    public Object plus1Item(Long orderItemId) {
+        OrderItem orderItem = orderItemRepository.findById(orderItemId).orElseThrow();
+        Orders orders = ordersRepository.findById(orderItem.getOrders().getId()).orElseThrow();
+        Product product = productRepository.findByName(orderItem.getProductName());
+        Color color = colorRepository.findByValueAndProductId(orderItem.getValueColor(), product.getId());
+        Size size = sizeRepository.findByValueAndColorId(orderItem.getValueSize(), color.getId());
+        orderItem.setQuantity(orderItem.getQuantity() + 1);
+        orderItemRepository.save(orderItem);
+        if (orderItem.getQuantity() > size.getTotal()) {
+            String errorMessage  = String.format(
+                    "Size %s không còn đủ số lượng. Vui lòng chọn ít hơn %d sản phẩm",
+                    size.getValue(),
+                    size.getTotal()
+            );
+            return errorMessage ;
+        } else if (size.getTotal() == 0) {
+            return "Size này đang hết hàng vui lòng chọn sản phẩm khác";
+        } else {
+            orderItem.setSellPrice(product.getSalePrice());
+            List<OrderItem> orderItems = orderItemRepository.findByOrders(orders);
+            orders.setOrderItems(orderItems);
+            updateOrderAndShippingFee(orders);
+            ordersRepository.save(orders);
+            return ordersMapper.mapToResponse(orders);
+        }
+    }
 
     @Override
     @Transactional
     public Object checkCreateOrder(Long orderId) {
         Orders orders = ordersRepository.findById(orderId).orElseThrow();
         List<OrderItem> orderItems = orders.getOrderItems();
-        for(OrderItem orderItem : orderItems){
+        for (OrderItem orderItem : orderItems) {
             Product product = productRepository.findByName(orderItem.getProductName());
             Color color = colorRepository.findByValueAndProductId(orderItem.getValueColor(), product.getId());
             Size size = sizeRepository.findByValueAndColorId(orderItem.getValueSize(), color.getId());
@@ -223,8 +275,8 @@ public class OrdersServiceImpl implements OrdersService {
                         size.getValue(),
                         orderItem.getProductName()
                 );
-            }else {
-                return "ok";
+            } else {
+                return ordersMapper.mapToResponse(orders);
             }
         }
         return "Có thể thanh toán";
@@ -242,7 +294,11 @@ public class OrdersServiceImpl implements OrdersService {
             orders.setOrderItems(orderItemList);
             orders.setType(Constants.ORDERS_TYPE);//xét là đơn hàng
             orders.setCreateDate(date);
+            orders.setOrderDate(date);
             orders.setModifiedDate(date);
+            if(orders.getCodeOrders() == null) {
+                orders.setCodeOrders(Utils.getRandomNumber(8));
+            }
             //đã thanh toán online
             if (orders.getPaymentMethod() != null) {
                 orders.setStatus(Constants.APPROVED_STATUS);
@@ -605,7 +661,6 @@ public class OrdersServiceImpl implements OrdersService {
     //------------------Thêm sửa xóa giỏ hàng ---------------//
     private void initializeOrderAndSave(Orders orders, User user) {
         Date date = new Date();
-        orders.setCodeOrders(Utils.getRandomNumber(8));
         orders.setCreateDate(date);
         orders.setModifiedDate(date);
         orders.setUser(user);

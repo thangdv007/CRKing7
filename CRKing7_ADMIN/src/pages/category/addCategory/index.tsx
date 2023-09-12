@@ -7,6 +7,7 @@ import { RootState } from '~/redux/reducers';
 import { Category } from '~/types/category.type';
 import { toast } from 'react-toastify';
 import path from '~/constants/path';
+import Images from '~/assets';
 
 const AddCategory = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -34,8 +35,21 @@ const AddCategory = () => {
   const [typeId, setTypeId] = React.useState<number>();
   const [description, setDescription] = React.useState('');
   const [parentId, setParentId] = React.useState<number>();
-
   const [parentCategory, setParentCategory] = React.useState<Category[]>([]);
+  const [fileImg, setFileImg] = React.useState<File>();
+  const img = React.useMemo(() => {
+    return fileImg ? URL.createObjectURL(fileImg) : '';
+  }, [fileImg]);
+  const refInputImage = React.useRef<HTMLInputElement>(null);
+  const handleUpload = () => {
+    refInputImage.current?.click();
+  };
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const fileFromLocal = event.target.files?.[0];
+    // pushDa(fileFromLocal);
+    setFileImg(fileFromLocal);
+    // console.log(fileFromLocal);
+  };
 
   const getParentCategory = async () => {
     if (!!token) {
@@ -91,6 +105,7 @@ const AddCategory = () => {
           title: title,
           description: description,
           type: typeId,
+          urlImage: fileImg?.name,
           parentCategoryId: parentId,
         };
         const url = Api.createCategory();
@@ -117,14 +132,13 @@ const AddCategory = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
+        toast.error(`Có lỗi xảy ra`, {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
         });
         console.error(error);
       }
-    } else {
     }
   };
   React.useEffect(() => {
@@ -198,7 +212,7 @@ const AddCategory = () => {
               className="h-9 border-[#737373] text-black border-[2px] rounded-lg appearance-none text-center w-[80%]"
               onChange={handleChooseParent}
             >
-              <option value="">-- Chọn danh mục cha --</option>
+              <option value={0}>-- Chọn danh mục cha --</option>
               <option value={0}>Đây là danh mục cha</option>
               {parentCategory.map((item, i) => (
                 <option value={item.id} key={i}>
@@ -206,6 +220,37 @@ const AddCategory = () => {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+        <div className="flex mt-3">
+          <div className="w-[30%]"></div>
+          <div className="w-[50%] h-auto p-3 border-black border border-dashed rounded-lg">
+            <input
+              className="hidden"
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              multiple
+              ref={refInputImage}
+              onChange={onFileChange}
+            />
+            <div className="flex items-center justify-around cursor-pointer">
+              {img ? (
+                <div className="relative">
+                  <img src={img} className="w-auto h-auto object-contain" />
+                  <div
+                    onClick={() => setFileImg('')}
+                    className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-0 right-0"
+                  >
+                    <img src={Images.iconX} className="w-[10px] h-[10px]" />
+                  </div>
+                </div>
+              ) : (
+                <div onClick={handleUpload} className="flex flex-col items-center justify-center">
+                  <img src={Images.chooseImage} className="w-[120px] h-[120px] object-contain pt-2" />
+                  <span>Chọn ảnh để tải lên</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

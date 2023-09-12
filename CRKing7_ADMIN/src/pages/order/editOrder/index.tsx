@@ -149,6 +149,64 @@ const EditOrder = () => {
   const updateOrder = async () => {
     if (!!token) {
       try {
+        const phoneNumberRegex = /^0[0-9]{9}$/;
+        if (!fullName) {
+          toast.error(`Vui lòng nhập họ tên`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (!phone) {
+          toast.error(`Vui lòng nhập số điện thoại`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (!addressDetail) {
+          toast.error(`Vui lòng nhập địa chỉ`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (!cityId) {
+          toast.error(`Vui lòng chọn tỉnh / thành phố`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (!districtId) {
+          toast.error(`Vui lòng chọn quận / huyện`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (!wardId) {
+          toast.error(`Vui lòng chọn phường / xã`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          return;
+        }
+        if (isNaN(Number(phone)) || !phoneNumberRegex.test(phone)) {
+          toast.error('Số điện thoại không hợp lệ', {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+          setPhone('');
+          return;
+        }
         const data = {
           orderId: id,
           userNameEmp: order?.userNameEmp,

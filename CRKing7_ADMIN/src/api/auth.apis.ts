@@ -1,6 +1,6 @@
 import httpRequest from "~/constants/httpRequest";
 import { AuthResponse } from "~/types/auth.type";
-import { SuccessResponse } from "~/types/ultis.type";
+import { SuccessResponse } from "~/types/utils.type";
 
 const authApi = {
   login : (data) => httpRequest.post<SuccessResponse<string | AuthResponse>, any>("/api/login", data),

@@ -111,8 +111,6 @@ const TopNav = () => {
             token: token,
           }),
         ]);
-        console.log(res);
-
         if (res.status) {
           setNotifications(res.data);
         }

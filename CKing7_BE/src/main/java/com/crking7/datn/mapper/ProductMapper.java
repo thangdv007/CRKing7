@@ -46,7 +46,5 @@ public interface ProductMapper{
     UserResponse mapModelToResponse(User user);
     //Update Tets
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "productCategory.id", source = "categoryId")
-    @Mapping(target = "productAuthor.id", source = "userId")
     void updateModel2(@MappingTarget Product product, ProductUDRequest productRequest);
 }

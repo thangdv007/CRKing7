@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from './redux/reducers';
+import Types from './redux/types';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Layout from './pages/layout';
+import './static/css/bootstrap.min.css';
+import path from './constants/path';
+import CheckOut from './pages/checkOut';
+import ThankYou from './pages/checkOut/thankyou';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.AuthReducer.user);
+  const token = useSelector((state: RootState) => state.AuthReducer.token);
 
+  const checkData = () => {
+    const userLocal = localStorage.getItem('user');
+    const tokenLocal = localStorage.getItem('token');
+    const parseUser = userLocal ? JSON.parse(userLocal) : null;
+    if (tokenLocal && parseUser && !token) {
+      dispatch({
+        type: Types.LOGIN,
+        value: { user: parseUser, token: tokenLocal },
+      });
+    }
+  };
+  React.useEffect(() => {
+    if (!user) {
+      checkData();
+    }
+  }, [user]);
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <ToastContainer />
+      <Routes>
+        <Route path={path.checkOut} element={<CheckOut />} />
+        <Route path={path.thankYou} element={<ThankYou />} />
+
+        <Route path="*" element={<Layout />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;

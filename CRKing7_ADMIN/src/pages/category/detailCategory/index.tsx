@@ -136,6 +136,10 @@ const DetailCategory = () => {
           )}
           {categrory?.status === 0 && <div className="w-[70%] relative flex items-center text-red-500">Đã khóa</div>}
         </div>
+        <div className="flex flex-col mt-3">
+          <div className="w-[30%] text-black font-bold">Hình ảnh</div>
+          <img src={`${API_URL_IMAGE}${categrory?.urlImage}`} className="object-contain" />
+        </div>
         <div className="flex items-center justify-center mt-3 ml-[70%]">
           <div
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"

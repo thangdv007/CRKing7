@@ -12,6 +12,7 @@ export interface Order {
   paymentMethod: string;
   phone: string;
   province: string;
+  orderDate: string;
   shipDate: null | string;
   shippingFee: number;
   status: number;

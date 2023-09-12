@@ -7,6 +7,8 @@ import { RootState } from '~/redux/reducers';
 import { Category } from '~/types/category.type';
 import { toast } from 'react-toastify';
 import path from '~/constants/path';
+import Images from '~/assets';
+import { API_URL_IMAGE } from '~/constants/utils';
 
 const EditCategory = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -37,8 +39,21 @@ const EditCategory = () => {
   const [description, setDescription] = React.useState('');
   const [parentId, setParentId] = React.useState<number>();
   const [category, setCategory] = React.useState<Category>();
-
   const [parentCategory, setParentCategory] = React.useState<Category[]>([]);
+  const [fileImg, setFileImg] = React.useState<File>();
+  const img = React.useMemo(() => {
+    return fileImg ? URL.createObjectURL(fileImg) : '';
+  }, [fileImg]);
+  const refInputImage = React.useRef<HTMLInputElement>(null);
+  const handleUpload = () => {
+    refInputImage.current?.click();
+  };
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const fileFromLocal = event.target.files?.[0];
+    // pushDa(fileFromLocal);
+    setFileImg(fileFromLocal);
+    // console.log(fileFromLocal);
+  };
 
   React.useEffect(() => {
     if (category != null) {
@@ -46,6 +61,7 @@ const EditCategory = () => {
       setDescription(category.description);
       setTypeId(category.type);
       setParentId(category.categoryParent || null || undefined);
+      setFileImg(new File([], category.urlImage));
     }
   }, [category]);
 
@@ -83,24 +99,19 @@ const EditCategory = () => {
   const updateCategory = async () => {
     if (!!token) {
       try {
-        if (title != null) {
-          toast.success(`Tên danh mục không được để trống`, {
+        if (!title) {
+          toast.error(`Tên danh mục không được để trống`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
           });
-        }
-        if (typeId != null) {
-          toast.success(`Vui lòng chọn 1 loại danh mục`, {
-            position: 'top-right',
-            pauseOnHover: false,
-            theme: 'dark',
-          });
+          return;
         }
         const data = {
           title: title,
           description: description,
           type: typeId,
+          urlImage: fileImg?.name,
           parentCategoryId: parentId,
         };
         const url = Api.updateCategory(categoryId);
@@ -252,6 +263,37 @@ const EditCategory = () => {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+        <div className="flex mt-3">
+          <div className="w-[30%]"></div>
+          <div className="w-[50%] h-auto p-3 border-black border border-dashed rounded-lg">
+            <input
+              className="hidden"
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              multiple
+              ref={refInputImage}
+              onChange={onFileChange}
+            />
+            <div className="flex items-center justify-around cursor-pointer">
+              {img ? (
+                <div className="relative">
+                  <img src={`${API_URL_IMAGE}${fileImg?.name}`} className="w-auto h-auto object-contain" />
+                  <div
+                    onClick={() => setFileImg('')}
+                    className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-0 right-0"
+                  >
+                    <img src={Images.iconX} className="w-[10px] h-[10px]" />
+                  </div>
+                </div>
+              ) : (
+                <div onClick={handleUpload} className="flex flex-col items-center justify-center">
+                  <img src={Images.chooseImage} className="w-[120px] h-[120px] object-contain pt-2" />
+                  <span>Chọn ảnh để tải lên</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

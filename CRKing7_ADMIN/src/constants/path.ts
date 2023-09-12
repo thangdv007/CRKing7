@@ -39,7 +39,7 @@ const path = {
   editArticle: '/edit-article',  
   //order
   addOrder: '/add-order',
-  detailOrder: '/deail-order',
+  detailOrder: '/deail-order/:id',
   editOrder: '/edit-order', 
 
 } as const;

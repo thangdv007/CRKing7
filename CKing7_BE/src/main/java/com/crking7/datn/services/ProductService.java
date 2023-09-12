@@ -13,6 +13,9 @@ public interface ProductService {
      */
     List<ProductResponse> getProducts(int pageNo, int pageSize, String sortBy);
 
+    List <ProductResponse> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice,
+                                          Long categoryId, int pageNo, int pageSize, String sortBy,boolean desc);
+
     List<ProductResponse> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy);
 
     ProductResponse getProduct(long productId);
@@ -51,6 +54,8 @@ public interface ProductService {
     List<ProductResponse> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy);
 
     List<ProductResponse> getRelatedProducts(Long categoryId, int limit);
+
+    List<ProductResponse> getRandomProducts();
 
     List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy);
 

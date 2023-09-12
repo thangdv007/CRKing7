@@ -158,18 +158,12 @@ const Product = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   React.useEffect(() => {
     if (product.length > 0) {
       product.forEach(async (item) => {
-        if (item.sale != 0) {
+        if (item.sale != null && item.sale !== 0) {
           await getSale(item.sale);
         }
       });

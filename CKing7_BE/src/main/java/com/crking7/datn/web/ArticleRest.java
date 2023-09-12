@@ -22,7 +22,7 @@ public class ArticleRest {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getArticles(@RequestParam(value = "pageNo", defaultValue = "0")int pageNo,
+    public ResponseEntity<?> getArticles(@RequestParam(value = "pageNo", defaultValue = "1")int pageNo,
                                          @RequestParam(value = "pageSize", defaultValue = "20")int pageSize,
                                          @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
         try{
@@ -39,9 +39,35 @@ public class ArticleRest {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }
+    @GetMapping("/home")
+    public ResponseEntity<?> getArticleAdmin() {
+        try {
+            List<ArticleResponse> articleResponses = articleService.getArticlesHome();
+            if (articleResponses == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", articleResponses), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/relatedArticle/{id}")
+    public ResponseEntity<?> getRelatedArticles(@PathVariable(name = "id") Long categoryId) {
+        try {
+            List<ArticleResponse> articleResponses = articleService.getRelatedArticles(categoryId);
+            if (articleResponses == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", articleResponses), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     @GetMapping("/category/{id}")
     public ResponseEntity<?> getArticlesByCategory(@PathVariable("id")long categoryId,
-                                                   @RequestParam(value = "pageNo", defaultValue = "0")int pageNo,
+                                                   @RequestParam(value = "pageNo", defaultValue = "1")int pageNo,
                                                    @RequestParam(value = "pageSize", defaultValue = "20")int pageSize,
                                                    @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
         try{

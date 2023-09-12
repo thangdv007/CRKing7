@@ -12,5 +12,7 @@ public class CategoryRequest {
 	 
 	private String description;
 
+	private String urlImage;
+
 	private Long parentCategoryId;
 }

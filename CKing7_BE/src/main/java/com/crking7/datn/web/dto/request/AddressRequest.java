@@ -18,5 +18,5 @@ public class AddressRequest {
 
     private String wards;
 
-    private long userId;
+    private Long userId;
 }

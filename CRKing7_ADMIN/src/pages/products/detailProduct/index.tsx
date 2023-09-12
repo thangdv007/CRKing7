@@ -278,6 +278,7 @@ const DetailProduct = () => {
                         <div className="w-[25%]">{sizeItem.sold}</div>
                       </div>
                     ))}
+                    <div className="w-full bg-black h-[1px] my-2"></div>
                   </div>
                 </React.Fragment>
               ))}
@@ -296,7 +297,7 @@ const DetailProduct = () => {
         <div className="w-[70%] flex flex-col border rounded-md p-5">
           <span className="text-lg font-semibold text-blue">Hình ảnh</span>
           <div className="w-full h-[1px] bg-black"></div>
-          <div className="flex items-center justify-around pt-5">
+          <div className="grid grid-cols-4 gap-4 justify-around pt-5">
             {!!images &&
               !!images.length &&
               images.map((item, i) => (

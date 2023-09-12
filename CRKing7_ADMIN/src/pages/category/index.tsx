@@ -9,6 +9,7 @@ import path from '~/constants/path';
 import SpinLoading from '~/components/loading/spinLoading';
 import Modal from 'react-modal';
 import { Category } from '~/types/category.type';
+import { API_URL_IMAGE } from '~/constants/utils';
 
 const customStyles = {
   content: {
@@ -251,11 +252,11 @@ const Category = () => {
     <div className="">
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <span className="text-base font-bold">Quản lý sản phẩm</span>
+          <span className="text-base font-bold">Quản lý danh mục</span>
           <div className="flex ml-5 items-center justify-center">
             <input
               className="h-10 border-black rounded-lg pl-3"
-              placeholder="Nhập tên sản phẩm ..."
+              placeholder="Nhập tên danh mục ..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -281,6 +282,7 @@ const Category = () => {
             <tr>
               <th className="w-[5%]">Mã</th>
               <th className="w-[20%] text-center">Tên danh mục</th>
+              <th className="w-[10%]">Hình ảnh</th>
               <th className="w-[20%] text-center">Danh mục cha</th>
               <th className="w-[20%] text-center">Loại danh mục</th>
               <th className="w-[15%]">Trạng thái</th>
@@ -296,6 +298,9 @@ const Category = () => {
                   <tr key={i} className="cursor-pointer">
                     <td>{item.id}</td>
                     <td className="text-center">{item.title}</td>
+                    <td className="">
+                      <img src={`${API_URL_IMAGE}${item.urlImage}`} className="w-20 h-20 object-contain" />
+                    </td>
                     <td className="text-center">{categoriesMapping[item.categoryParent]}</td>
                     <td className="text-center">
                       {item.type == 0 && 'Sản phẩm'}
@@ -322,7 +327,7 @@ const Category = () => {
                         </div>
                       </td>
                     )}
-                    <td className="flex flex-col items-center justify-between ">
+                    <td className="flex flex-col items-center">
                       <i
                         className="bx bxs-show text-2xl font-semibold text-blue"
                         onClick={() => navigate(path.detailCategory, { state: { item } })}

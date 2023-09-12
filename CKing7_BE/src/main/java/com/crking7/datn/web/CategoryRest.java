@@ -53,6 +53,20 @@ public class CategoryRest {
             return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("/parent")
+    public ResponseEntity<?> getCategoriesByParentCategory(@RequestParam(name = "parentId") Long parentId){
+        try {
+            List<CategoryResponse> categoryResponses = categoryService.getCategoriesByParentCategory(parentId);
+            if (categoryResponses != null && !categoryResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(categoryResponses);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", null), HttpStatus.OK);
+            }
+        }catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable(name = "id") long id){
         try {

@@ -46,6 +46,31 @@ public class ProductRest {
             return new ResponseEntity<>(ApiResponsePage.builder(200, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("/allProduct")
+    public ResponseEntity<?> getALLProducts(@RequestParam(value = "valueSize", required = false) List<String> valueSize,
+                                      @RequestParam(value = "valueColor", required = false) List<String> valueColor,
+                                      @RequestParam(value = "minPrice", required = false) Integer minPrice,
+                                      @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
+                                      @RequestParam(value = "categoryId", required = false) Long categoryId,
+                                      @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+                                      @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                      @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                      @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection) {
+
+        try {
+            List<ProductResponse> productResponses = productService.getALLProducts(valueSize, valueColor, minPrice, maxPrice, categoryId, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
+            if (productResponses != null) {
+                int total = productResponses.size();
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
+            } else {
+                int total = 0;
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
+        }
+    }
 
     /**
      * get products by categoryId and pagination
@@ -72,8 +97,8 @@ public class ProductRest {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> getProductByName(@RequestParam(required = false) String keyword,
-                                              @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+    public ResponseEntity<?> getProductByName(@RequestParam(value = "keyword") String keyword,
+                                              @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                               @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                               @RequestParam(value = "sortBy", defaultValue = "name") String sortBy) {
 
@@ -113,6 +138,19 @@ public class ProductRest {
     public ResponseEntity<?> getProduct(@PathVariable("id") Long productId) {
         try {
             ProductResponse productResponse = productService.getProduct(productId);
+            if (productResponse == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", productResponse), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/detail")
+    public ResponseEntity<?> getProductByName(@RequestParam(value = "name") String name) {
+        try {
+            ProductResponse productResponse = productService.getProductByName(name);
             if (productResponse == null) {
                 return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", null), HttpStatus.OK);
             } else {
@@ -246,6 +284,20 @@ public class ProductRest {
 
         try {
             List<ProductResponse> productResponses = productService.getRelatedProducts(categoryId, 10);
+            if (productResponses != null && !productResponses.isEmpty()) {
+                List<Object> data = new ArrayList<>(productResponses);
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thất bại", null), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/randomProducts")
+    public ResponseEntity<?> getRandomProducts() {
+        try {
+            List<ProductResponse> productResponses = productService.getRandomProducts();
             if (productResponses != null && !productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Lấy dữ liệu thành công", data), HttpStatus.OK);
