@@ -8,11 +8,13 @@ import com.crking7.datn.exceptions.ResourceNotFoundException;
 import com.crking7.datn.mapper.CategoryMapper;
 import com.crking7.datn.repositories.CategoryRepository;
 import com.crking7.datn.services.CategoryService;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,29 +36,32 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public List<CategoryResponse> getCategories(int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Category> categories = categoryRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (!categories.isEmpty()) {
-            return categories.stream()
-                    .map(categoryMapper::mapModelToResponse)
-                    .toList();
-        } else {
-            return null;
+    public Pair<List<CategoryResponse>, Integer> getCategories(int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Category> categories = categoryRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
+        int total = (int) categories.getTotalElements();
+        List<CategoryResponse> categoryResponses = categories.getContent().stream()
+                .map(categoryMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(categoryResponses, total);
     }
 
     @Override
-    public List<CategoryResponse> getAllCategory(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Category> categories = categoryRepository.getAllByKeyword(keyword, pageable);
-        if (!categories.isEmpty()) {
-            return categories.stream()
-                    .map(categoryMapper::mapModelToResponse)
-                    .toList();
-        } else {
-            return null;
+    public Pair<List<CategoryResponse>, Integer> getAllCategory(String keyword, Integer status, Integer type, int pageNo, int pageSize, String sortBy, boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<Category> categories = categoryRepository.getAllByKeyword(keyword, status, type, pageable);
+        int total = (int) categories.getTotalElements();
+        List<CategoryResponse> categoryResponses = categories.getContent().stream()
+                .map(categoryMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(categoryResponses, total);
     }
 
     @Override
@@ -118,7 +123,7 @@ public class CategoryServiceImpl implements CategoryService {
             if (categoryRequest.getParentCategoryId() != 0) {
                 parentCategory = categoryRepository.findById(categoryRequest.getParentCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryRequest.getParentCategoryId()));
                 categoryNew.setParentCategory(parentCategory);
-            }else{
+            } else {
                 categoryNew.setParentCategory(null);
             }
             Date date = new Date();
@@ -165,6 +170,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryResponse> getAllCategoryAdmin() {
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream()
+                .map(categoryMapper::mapModelToResponse)
+                .toList();
+    }
+
+    @Override
     public List<CategoryResponse> getCategoriesByParentCategory(Long parentId) {
         List<Category> categories = categoryRepository.findByParentCategoryId(parentId);
         if (!categories.isEmpty()) {
@@ -185,10 +198,10 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.updateModel(category, categoryRequest);
         Date currentDate = new Date();
         category.setModifiedDate(currentDate);
-        if(categoryRequest.getParentCategoryId() != 0 ){
+        if (categoryRequest.getParentCategoryId() != 0) {
             Category parentCategory = categoryRepository.findById(categoryRequest.getParentCategoryId()).orElseThrow();
             category.setParentCategory(parentCategory);
-        }else{
+        } else {
             category.setParentCategory(null);
         }
         categoryRepository.save(category);

@@ -9,6 +9,7 @@ import 'react-quill/dist/quill.snow.css';
 import Images from '~/assets';
 import { Category } from '~/types/category.type';
 import { useNavigate } from 'react-router-dom';
+import Editor from '~/components/quill';
 
 const AddProduct = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -141,7 +142,7 @@ const AddProduct = () => {
           }),
         ]);
         if (res.status) {
-          setCategory(res.data.data);
+          setCategory(res.data);
         } else {
           toast.error(`Có lỗi xảy ra`, {
             position: 'top-right',
@@ -152,18 +153,11 @@ const AddProduct = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   React.useEffect(() => {
     getAllCategory();
   }, []);
-
   const colorsData = addVariants.map((item) => ({
     value: item.color,
     sizes: item.sizes.map((sizeItem) => ({
@@ -171,7 +165,6 @@ const AddProduct = () => {
       total: parseInt(sizeItem.quantity, 10),
     })),
   }));
-
   const imagesData = selectedImages.map((item) => ({
     url: item.name,
   }));
@@ -286,11 +279,9 @@ const AddProduct = () => {
             data: data,
           }),
         ]);
-        console.log(res);
-
         if (res.status) {
           navigate(-1);
-          toast.error(`Tạo mới sản phẩm thành công`, {
+          toast.success(`Tạo mới sản phẩm thành công`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -305,12 +296,6 @@ const AddProduct = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   const handleCategoryChange = (e) => {
@@ -348,14 +333,14 @@ const AddProduct = () => {
           </div>
           <div className="flex flex-col pt-5">
             <span className="text-base text-black font-bold">Mô tả: </span>
-            <ReactQuill
+            {/* <ReactQuill
               theme="snow"
               value={description}
               onChange={setDescription}
               className="w-full"
               placeholder="Nhập mô tả ở đây"
-            />
-            {/* <Editor placeholder={'Viết Mô tả ở đây'}/> */}
+            /> */}
+            <Editor value={description} onChange={setDescription} placeholder={'Viết mô tả ở đây'} />
           </div>
         </div>
         <div className="w-[25%] flex flex-col border rounded-md p-5 self-start">

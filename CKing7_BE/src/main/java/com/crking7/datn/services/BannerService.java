@@ -2,6 +2,8 @@ package com.crking7.datn.services;
 
 import com.crking7.datn.web.dto.request.BannerRequest;
 import com.crking7.datn.web.dto.response.BannerResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -19,8 +21,9 @@ public interface BannerService {
 
     BannerResponse getBannerByName(String name);
 
-    List<BannerResponse> getBanners(int pageNo, int pageSize, String sortBy);
-    List<BannerResponse> getAllBanners(String keyword, int pageNo, int pageSize, String sortBy);
+    Pair<List<BannerResponse>, Integer> getBanners(int pageNo, int pageSize, String sortBy);
+
+    Pair<List<BannerResponse>, Integer> getAllBanners(String keyword,Integer status, int pageNo, int pageSize, String sortBy, boolean desc);
 
     void deleteBanner(long id);
 

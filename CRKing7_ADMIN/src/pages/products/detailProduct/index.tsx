@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Api from '~/api/apis';
 import { REQUEST_API } from '~/constants/method';
@@ -13,6 +13,7 @@ import { User } from '~/types/user.type';
 
 const DetailProduct = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const idProduct = location.state;
   const [product, setProduct] = React.useState<Product>();
@@ -310,7 +311,14 @@ const DetailProduct = () => {
               ))}
           </div>
         </div>
-        <div className="w-[25%] flex flex-col p-5 self-start"></div>
+        <div className="w-[30%] flex flex-col p-5 self-end">
+          <div
+            className="flex items-center justify-center bg-blue h-10 rounded-md w-[30%] self-end mt-[60%] cursor-pointer"
+            onClick={() => navigate(-1)}
+          >
+            <span className="text-black font-bold">Quay lại</span>
+          </div>
+        </div>
       </div>
     </>
   );

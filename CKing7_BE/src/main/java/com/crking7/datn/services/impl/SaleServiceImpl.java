@@ -11,12 +11,14 @@ import com.crking7.datn.web.dto.request.ArticleImageRequest;
 import com.crking7.datn.web.dto.request.ArticleRequest;
 import com.crking7.datn.web.dto.request.SaleRequest;
 import com.crking7.datn.web.dto.response.ArticleResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.SaleResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -81,13 +83,18 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public List<SaleResponse> getAll(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Sale> sales = saleRepository.findAllSale(keyword, pageable);
-
-        return sales.getContent().stream()
+    public Pair<List<SaleResponse>, Integer> getAll(String keyword, Integer isActive, int pageNo, int pageSize, String sortBy, boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<Sale> sales = saleRepository.findAllSale(keyword, isActive, pageable);
+        int total = (int) sales.getTotalElements();
+        List<SaleResponse> ordersResponses = sales.getContent().stream()
                 .map(saleMapper::mapModelToResponse)
                 .toList();
+        return Pair.of(ordersResponses, total);
     }
 
     @Override

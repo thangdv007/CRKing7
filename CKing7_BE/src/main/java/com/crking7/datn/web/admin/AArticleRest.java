@@ -8,7 +8,10 @@ import com.crking7.datn.web.dto.request.ArticleUDRequest;
 import com.crking7.datn.web.dto.request.CategoryRequest;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.web.dto.response.CategoryResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,17 +30,20 @@ public class AArticleRest {
 
     @GetMapping("")
     public ResponseEntity<?> getArticles(@RequestParam(required = false) String keyword,
-                                         @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                         @RequestParam(required = false) Integer status,
+                                         @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                          @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
-                                         @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+                                         @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                         @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection
+        ) {
         try {
-            List<ArticleResponse> articleResponses = articleService.getAllArticles(keyword, pageNo, pageSize, sortBy);
-            if (articleResponses != null) {
-                int total = articleResponses.size();
+            Pair<List<ArticleResponse>, Integer> result  = articleService.getAllArticles(keyword,status, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
+            List<ArticleResponse> articleResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!articleResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(articleResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
                 return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
         } catch (Exception e) {

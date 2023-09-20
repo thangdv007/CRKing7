@@ -7,15 +7,15 @@ import com.crking7.datn.services.OrdersService;
 import com.crking7.datn.web.dto.request.*;
 import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin/order")
@@ -129,6 +129,25 @@ public class AOrdersRest {
         }
     }
 
+    @GetMapping("/totalInCome")
+    public ResponseEntity<?> totalInCome() {
+        try {
+            Long totalInCome = ordersService.totalInCome();
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", totalInCome), HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
+        }
+    }
+    @GetMapping("/totalOrderNoProcess")
+    public ResponseEntity<?> totalOrderNoProcess() {
+        try {
+            Long totalOrderNoProcess = ordersService.totalOrderNoProcess();
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", totalOrderNoProcess), HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
+        }
+    }
+
     @GetMapping("/totalSold")
     public ResponseEntity<?> getTotalSoldProducts() {
         try {
@@ -140,23 +159,25 @@ public class AOrdersRest {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getOrder(@Param(value = "status") Integer status,
-                                      @Param(value = "startDate") String startDate,
-                                      @Param(value = "endDate") String endDate,
-                                      @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+    public ResponseEntity<?> getOrder(@RequestParam(required = false) String keyword,
+                                      @RequestParam(value = "status", required = false) Integer status,
+                                      @RequestParam(value = "isCheckout", required = false) Boolean isCheckout,
+                                      @RequestParam(value = "startDate", required = false ) String startDate,
+                                      @RequestParam(value = "endDate", required = false) String endDate,
+                                      @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                       @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                       @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
                                       @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection) {
 
         try {
-            List<OrdersResponse> ordersResponses = ordersService.getOrder(status, startDate, endDate, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
-            if (ordersResponses != null) {
-                int total = ordersResponses.size();
+            Pair<List<OrdersResponse>, Integer> result  = ordersService.getOrder(keyword, status,isCheckout, startDate, endDate, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
+            List<OrdersResponse> ordersResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!ordersResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(ordersResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(200, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
@@ -185,8 +206,8 @@ public class AOrdersRest {
 
     @GetMapping("/allOrder")
     public ResponseEntity<?> getAllOrder(@RequestParam(required = false) String keyword,
-                                         @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
-                                         @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
+                                         @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
                                          @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
 
         try {
@@ -211,6 +232,19 @@ public class AOrdersRest {
             if (ordersResponse != null) {
                 return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", ordersResponse), HttpStatus.OK);
 
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, false, "Thất bại", "Có lỗi xảy ra"), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
+        }
+    }
+    @GetMapping("/getOrderByMonth")
+    public ResponseEntity<?> getOrderByMonth(@RequestParam int status) {
+        try {
+            List<Map<String, Object>> order = ordersService.getOrderByMonth(status);
+            if (order != null) {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", order), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(ApiResponse.build(200, false, "Thất bại", "Có lỗi xảy ra"), HttpStatus.OK);
             }

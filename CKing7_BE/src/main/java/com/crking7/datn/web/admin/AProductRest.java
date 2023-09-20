@@ -9,6 +9,7 @@ import com.crking7.datn.web.dto.request.ProductUDRequest;
 import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -140,19 +141,19 @@ public class AProductRest {
 
     @GetMapping("/quantity")
     public ResponseEntity<?> getProductByQuantity(@RequestParam(value = "isActive", defaultValue = "true") boolean isActive,
-                                                  @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                                  @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                                   @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                                   @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
 
         try {
-            List<ProductResponse> productResponses = productService.getProductByQuantity(isActive, pageNo, pageSize, sortBy);
-            if (productResponses != null) {
-                int total = productResponses.size();
+            Pair<List<ProductResponse>, Integer> result = productService.getProductByQuantity(isActive, pageNo, pageSize, sortBy);
+            List<ProductResponse> productResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(201, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
@@ -161,18 +162,24 @@ public class AProductRest {
 
     @GetMapping("")
     public ResponseEntity<?> getAllProducts(@RequestParam(required = false) String keyword,
-                                            @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                            @RequestParam(value = "status", required = false) Integer status,
+                                            @RequestParam(value = "minPrice", required = false) Integer minPrice,
+                                            @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
+                                            @RequestParam(value = "categoryId", required = false) Long categoryId,
+                                            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
-                                            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+                                            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                            @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection) {
 
         try {
-            List<ProductResponse> productResponses = productService.getAllProducts(keyword, pageNo, pageSize, sortBy);
-            int total = productResponses.size();
+            Pair<List<ProductResponse>, Integer> result = productService.getALLProductsAdmin(keyword, status, minPrice, maxPrice, categoryId, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
+            List<ProductResponse> productResponses = result.getFirst();
+            int total = result.getSecond();
             if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", Collections.singletonList("Không có sản phẩm nào trùng khớp")), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -197,21 +204,32 @@ public class AProductRest {
     @GetMapping("/productNoSale")
 
     public ResponseEntity<?> getProductNoSale(@RequestParam(required = false) String keyword,
-                                              @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                              @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                               @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                               @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
 
         try {
-            List<ProductResponse> productResponses = productService.getProductNoSale(keyword, pageNo, pageSize, sortBy);
-            int total = productResponses.size();
+            Pair<List<ProductResponse>, Integer> result = productService.getProductNoSale(keyword, pageNo, pageSize, sortBy);
+            List<ProductResponse> productResponses = result.getFirst();
+            int total = result.getSecond();
             if (!productResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(productResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", Collections.singletonList("Không có sản phẩm nào trùng khớp")), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(ApiResponsePage.builder(500, false, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/totalProduct")
+    public ResponseEntity<?> totalProduct() {
+        try {
+            Long totalProduct = productService.totalProduct();
+            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", totalProduct), HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hủy đơn hàng không thành công! Lỗi " + e.getMessage());
         }
     }
 }

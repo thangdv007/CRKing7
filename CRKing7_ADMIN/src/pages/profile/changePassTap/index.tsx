@@ -70,7 +70,7 @@ const ChangePass = () => {
       </div>
       <div className="p-5">
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Mật khẩu cũ</div>
+          <div className="w-[30%] text-base text-black font-bold">Mật khẩu cũ : </div>
           <div className="w-[70%] flex items-center">
             <input
               type="password"
@@ -81,7 +81,7 @@ const ChangePass = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Mật khẩu mới</div>
+          <div className="w-[30%] text-base text-black font-bold">Mật khẩu mới :</div>
           <div className="w-[70%] flex items-center">
             <input
               type="password"
@@ -92,7 +92,7 @@ const ChangePass = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Nhập lại mật khẩu mới</div>
+          <div className="w-[30%] text-base text-black font-bold">Nhập lại mật khẩu mới :</div>
           <div className="w-[70%] flex items-center">
             <input
               type="password"
@@ -107,7 +107,7 @@ const ChangePass = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={changePass}
           >
-            <span>Đổi</span>
+            <span className="text-base text-black font-bold">Đổi</span>
           </div>
         </div>
       </div>

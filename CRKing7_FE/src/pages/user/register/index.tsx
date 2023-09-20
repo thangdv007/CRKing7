@@ -110,6 +110,10 @@ const Register = () => {
       if (res.data.status) {
         setLoading(false);
         navigate(path.login);
+        toast.error(`Đăng kí thành công`, {
+          pauseOnHover: false,
+          theme: 'dark',
+        });
       } else {
         setLoading(false);
         toast.error(`${res.data.data}`, {
@@ -236,7 +240,7 @@ const Register = () => {
                 />
               </div>
               <div className="clearfix large_form">
-                <label htmlFor="email" className="label icon-field">
+                <label htmlFor="username" className="label icon-field">
                   <i className="icon-login icon-envelope " />
                 </label>
                 <input

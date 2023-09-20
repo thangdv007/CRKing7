@@ -107,11 +107,17 @@ input:focus {
     text-transform: capitalize;
 }
 .apexcharts-legend.apx-legend-position-top.apexcharts-align-center{
-    right: 225px !important;
+    right: 145px !important;
     position: absolute !important; 
     left: 0px !important;
-    top: 2px !important;
+    top: 25px !important;
     max-height: 123px !important;
+}
+.apexcharts-canvas .apexcharts-title-text{
+font-family: "Roboto", sans-serif !important;
+}
+.apexcharts-pan-icon, .apexcharts-reset-icon,.apexcharts-menu-icon{
+  display: none;
 }
 .card > div ~ div {
     margin-top: 30px;

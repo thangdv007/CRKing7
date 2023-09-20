@@ -9,12 +9,13 @@ import 'react-quill/dist/quill.snow.css';
 import Images from '~/assets';
 import { Category } from '~/types/category.type';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Product } from '~/types/product.type';
+import { Product, ProductImages } from '~/types/product.type';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
 
 const EditProduct = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
+  const navigate = useNavigate();
   const location = useLocation();
   const productId = location.state;
   const [product, setProduct] = React.useState<Product>();
@@ -23,7 +24,7 @@ const EditProduct = () => {
   const [price, setPrice] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [category, setCategory] = React.useState<Category[]>([]);
-  const [selectedImages, setSelectedImages] = React.useState<File[]>([]);
+  const [oldImages, setOldImages] = React.useState<ProductImages[]>([]);
   const [categoryId, setCategoryId] = React.useState();
   const [addVariants, setAddVariants] = React.useState([
     { id: '', color: '', sizes: [{ id: '', size: '', quantity: '' }] },
@@ -31,7 +32,6 @@ const EditProduct = () => {
   const [color, setColor] = React.useState('');
   const [size, setSize] = React.useState('');
   const [colorId, setColorId] = React.useState();
-  const [imageId, setImageId] = React.useState([]);
   const [sizeId, setSizeId] = React.useState();
   const [quantity, setQuantity] = React.useState<number>(1);
   React.useEffect(() => {
@@ -42,10 +42,9 @@ const EditProduct = () => {
     setCategoryId(product?.category || '');
     // Kiểm tra xem có dữ liệu hình ảnh đã chọn từ product hay không
     if (product?.images && product.images.length > 0) {
-      setSelectedImages(product.images.map((image) => new File([image], image.url)));
-      setImageId(product.images.map((image) => image.id));
+      setOldImages(product?.images);
     } else {
-      setSelectedImages([]); // Nếu không có, đặt selectedImages là một mảng rỗng
+      setOldImages([]); // Nếu không có, đặt oldImages là một mảng rỗng
     }
     const newAddVariants = [];
     if (product?.colors) {
@@ -132,7 +131,7 @@ const EditProduct = () => {
       return newVariants;
     });
   };
-
+  const [newImages, setNewImages] = React.useState<File[]>([]);
   const refInputImage = React.useRef<HTMLInputElement>(null);
   const handleUpload = () => {
     refInputImage.current?.click();
@@ -140,7 +139,7 @@ const EditProduct = () => {
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filesFromLocal = event.target.files;
     if (filesFromLocal) {
-      const newSelectedImages = [...selectedImages];
+      const newSelectedImages = [...newImages];
       for (let i = 0; i < filesFromLocal.length; i++) {
         if (newSelectedImages.length < 4) {
           newSelectedImages.push(filesFromLocal[i]);
@@ -148,13 +147,13 @@ const EditProduct = () => {
           break;
         }
       }
-      setSelectedImages(newSelectedImages);
+      setNewImages(newSelectedImages);
     }
   };
   const handleRemoveImage = (index: number) => {
-    const newSelectedImages = [...selectedImages];
-    newSelectedImages.splice(index, 1);
-    setSelectedImages(newSelectedImages);
+    const newImagesToRemove = [...newImages];
+    newImagesToRemove.splice(index, 1);
+    setNewImages(newImagesToRemove);
   };
   const getAllCategory = async () => {
     if (!!token) {
@@ -168,7 +167,7 @@ const EditProduct = () => {
           }),
         ]);
         if (res.status) {
-          setCategory(res.data.data);
+          setCategory(res.data);
         } else {
           toast.error(`Có lỗi xảy ra`, {
             position: 'top-right',
@@ -190,7 +189,36 @@ const EditProduct = () => {
   React.useEffect(() => {
     getAllCategory();
   }, []);
-
+  const handleDeleteImage = async (id: number) => {
+    if (!!token) {
+      try {
+        const url = Api.deleteProImages(id);
+        const [res] = await Promise.all([
+          REQUEST_API({
+            url: url,
+            method: 'delete',
+            token: token,
+          }),
+        ]);
+        if (res.status) {
+          const imageId = oldImages.findIndex((image) => image.id === id);
+          if (imageId !== -1) {
+            const updatedImages = [...oldImages];
+            updatedImages.splice(imageId, 1);
+            setOldImages(updatedImages);
+          }
+        } else {
+          toast.error(`Có lỗi xảy ra`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
   const colorsData = addVariants.map((item) => ({
     id: item.id,
     value: item.color,
@@ -201,10 +229,10 @@ const EditProduct = () => {
     })),
   }));
 
-  const imagesData = selectedImages.map((item, i) => ({
-    id: imageId[i],
+  const imagesData = newImages.map((item, i) => ({
     url: item.name,
   }));
+
   const handleUpdateProduct = async () => {
     if (!!token) {
       if (!productName) {
@@ -239,7 +267,7 @@ const EditProduct = () => {
         });
         return;
       }
-      if (selectedImages.length < 4) {
+      if (oldImages.length < 4) {
         toast.error(`Vui lòng chọn 4 ảnh cho sản phẩm`, {
           position: 'top-right',
           pauseOnHover: false,
@@ -298,7 +326,6 @@ const EditProduct = () => {
         colors: colorsData,
         images: imagesData,
       };
-
       try {
         const url = Api.updateProduct();
         const [res] = await Promise.all([
@@ -309,10 +336,9 @@ const EditProduct = () => {
             data: data,
           }),
         ]);
-        console.log(res);
-
         if (res.status) {
           getProduct();
+          setNewImages([]);
           toast.success(`Cập nhật sản phẩm thành công`, {
             position: 'top-right',
             pauseOnHover: false,
@@ -446,9 +472,20 @@ const EditProduct = () => {
               onChange={onFileChange}
             />
             <div className="grid grid-cols-4 gap-4 items-center justify-around cursor-pointer">
-              {selectedImages.map((image, index) => (
+              {oldImages.map((image, index) => (
                 <div key={index} className="relative">
-                  <img src={`${API_URL_IMAGE}${image.name}`} className="w-40 h-40 object-contain" />
+                  <img src={`${API_URL_IMAGE}${image?.url}`} className="w-40 h-40 object-contain" />
+                  <div
+                    onClick={() => handleDeleteImage(image.id)}
+                    className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-[0%] right-[0]"
+                  >
+                    <img src={Images.iconX} className="w-[10px] h-[10px]" />
+                  </div>
+                </div>
+              ))}
+              {newImages.map((image, index) => (
+                <div key={index} className="relative">
+                  <img src={URL.createObjectURL(image)} className="w-40 h-40 object-contain" />
                   <div
                     onClick={() => handleRemoveImage(index)}
                     className="absolute w-[20px] h-[20px] rounded items-center justify-center flex bg-[#00000080] top-[0%] right-[0]"
@@ -565,9 +602,15 @@ const EditProduct = () => {
           <div className=""></div>
         </div>
         {/* Bên trái */}
-        <div className="w-[25%] self-end flex justify-center">
+        <div className="w-[25%] self-end flex justify-around">
           <div
-            className="bg-blue h-10 flex items-center justify-center rounded-lg cursor-pointer w-[50%]"
+            className="bg-red-500 h-10 flex items-center justify-center rounded-lg cursor-pointer w-[40%]"
+            onClick={() => navigate(-1)}
+          >
+            <span className="text-white">Hủy</span>
+          </div>
+          <div
+            className="bg-blue h-10 flex items-center justify-center rounded-lg cursor-pointer w-[40%]"
             onClick={() => handleUpdateProduct()}
           >
             <span className="text-white">Lưu</span>

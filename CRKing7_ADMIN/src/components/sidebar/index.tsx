@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SidebarItem from './SidebarItem';
 import sidebar_items from '../../assets/JsonData/sidebar_routes.json';

@@ -2,6 +2,7 @@ package com.crking7.datn.services.impl;
 
 import com.crking7.datn.exceptions.ResourceNotFoundException;
 import com.crking7.datn.models.Product;
+import com.crking7.datn.models.dtos.TopUserDto;
 import com.crking7.datn.repositories.RoleRepository;
 import com.crking7.datn.repositories.UserRepository;
 import com.crking7.datn.securities.JwtConfig;
@@ -12,6 +13,8 @@ import com.crking7.datn.utils.OtpUtil;
 import com.crking7.datn.utils.Utils;
 import com.crking7.datn.web.dto.request.*;
 import com.crking7.datn.web.dto.response.LoginResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
+import com.crking7.datn.web.dto.response.SaleResponse;
 import com.crking7.datn.web.dto.response.UserResponse;
 import com.crking7.datn.mapper.UserMapper;
 import com.crking7.datn.models.Role;
@@ -23,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -76,17 +81,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers(int pageNo, int pageSize, String sortBy, boolean desc) {
-        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sortDirection, sortBy);
-        Page<User> users = userRepository.findAll(pageable);
-        if (users.isEmpty()) {
-            return null;
-        } else {
-            return users.getContent().stream()
-                    .map(userMapper::mapModelToResponse)
-                    .toList();
+    public Pair<List<UserResponse>, Integer> getAllUsers(String keyword,Integer status, int pageNo, int pageSize, String sortBy, boolean asc) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Sort.Direction sortDirection = asc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<User> users = userRepository.findAllUser(keyword,status, pageable);
+        int total = (int) users.getTotalElements();
+        List<UserResponse> userResponses = users.getContent().stream()
+                .map(userMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(userResponses, total);
     }
 
     @Override
@@ -97,29 +103,14 @@ public class UserServiceImpl implements UserService {
     public UserResponse findByEmail(String email) {
         return userMapper.mapModelToResponse(userRepository.findByEmail(email));
     }
-//    @Override
-//    public Object login(LoginRequest loginRequest) {
-//        UserResponse userResponse = findByUserName(loginRequest.getUsername());
-//        User user = userRepository.findByUsername(loginRequest.getUsername());
-//        if(user != null ){
-//            if(userResponse.getStatus() != 0) {
-//                Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-//                        loginRequest.getUsername(), loginRequest.getPassword()));
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//                //get token form tokenProvider
-//                String token = jwtConfig.generateToken(authentication);
-//                LoginResponse loginResponse = new LoginResponse();
-//                loginResponse.setToken(token);
-//                loginResponse.setUser(userResponse);
-//                return ResponseEntity.ok(loginResponse);
-//            }else {
-//                return "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ chăm sóc khách hàng!";
-//            }
-//        }else {
-//            return "Tài khoản không chính xác";
-//        }
-//    }
 
+    @Override
+    public List<UserResponse> findAllUser() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(userMapper::mapModelToResponse)
+                .toList();
+    }
 
     @Override
     public String hideUser(Long userId, Long id) {
@@ -221,12 +212,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public String generateOtp(RegisterRequest registerRequest) {
         String email = registerRequest.getEmail();
-        try {
-            emailUtils.sendOtpEmail(email);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Không thể gửi otp vui lòng thử lại", e);
+        User user = userRepository.findByEmail(email);
+        if(user == null){
+            try {
+                emailUtils.sendOtpEmail(email);
+            } catch (MessagingException e) {
+                throw new RuntimeException("Không thể gửi otp vui lòng thử lại", e);
+            }
+            return "Đã lấy mã OTP... Vui lòng xác minh tài khoản trong vòng 5 phút";
+        }else{
+            return null;
         }
-        return "Đã lấy mã OTP... Vui lòng xác minh tài khoản trong vòng 5 phút";
     }
 
     @Override
@@ -238,8 +234,8 @@ public class UserServiceImpl implements UserService {
         String otp = otpService.getOtp(registerRequest.getEmail());
         // Kiểm tra mã OTP trong yêu cầu với mã OTP được gửi qua email
         if (registerRequest.getOtp().equals(otp)) {
-            if (checkUser != null) {
-                if (checkUser2 != null) {
+            if (checkUser == null) {
+                if (checkUser2 == null) {
                     registerRequest.setPassword(passwordEncoder().encode(registerRequest.getPassword()));
                     User user = userMapper.mapSignupToModel(registerRequest);
                     user.setOtpGeneratedTime(LocalDateTime.now());
@@ -357,4 +353,20 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<TopUserDto> findTopUser() {
+        List<Object[]> results = userRepository.findTopUser();
+        List<TopUserDto> userSummaries = new ArrayList<>();
+        for (Object[] result : results) {
+            Long id = (Long) result[0];
+            String username = (String) result[1];
+            Long totalOrder = (Long) result[2];
+            Long totalIncome = (Long) result[3];
+
+            TopUserDto topUserDto = new TopUserDto(id, username, totalOrder, totalIncome);
+            userSummaries.add(topUserDto);
+        }
+
+        return userSummaries;
+    }
 }

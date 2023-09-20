@@ -22,6 +22,9 @@ import saleApi from '~/apis/sale.apis';
 import { Sale } from '~/types/sale.type';
 import ItemProduct from '~/components/product';
 
+import './styles.css';
+import ImageMagnifier from '~/components/imageMagnifier';
+
 const DetailProduct = () => {
   const user: User = useSelector((state: RootState) => state.AuthReducer.user);
   const dispatch = useDispatch();
@@ -35,6 +38,7 @@ const DetailProduct = () => {
   const [sale, setSale] = React.useState<Sale>();
   const [product, setProduct] = React.useState<Product>();
   const [colors, setColors] = React.useState<Color[]>([]);
+  const [sizes, setSizes] = React.useState<Size[]>([]);
   const [selectedColorI, setSelectedColorI] = React.useState(0);
   const [selectedColor, setSelectedColor] = React.useState('');
   const [selectedSizeI, setSelectedSizeI] = React.useState(0);
@@ -56,7 +60,7 @@ const DetailProduct = () => {
     },
     {
       id: 3,
-      label: 'Hướng dẫn chọn size',
+      label: 'Điều khoản dịch vụ',
     },
   ];
   const handleTabClick = (tabIndex) => {
@@ -114,39 +118,45 @@ const DetailProduct = () => {
   const handlePlusClick = () => {
     setQuantity(quantity + 1);
   };
-  const allSizes: Size[] = colors.reduce((accumulator, currentColor) => {
-    currentColor.sizes.forEach((size) => {
-      if (!accumulator.some((existingSize) => existingSize.value === size.value)) {
-        accumulator.push(size);
-      }
-    });
-    return accumulator;
-  }, []);
+  React.useEffect(() => {
+    // Lọc các kích thước dựa trên màu sắc được chọn
+    if (selectedColor) {
+      const sizesForSelectedColor = colors.find((item) => item.value === selectedColor)?.sizes || [];
+      const filteredSizes = sizesForSelectedColor.filter((size) => size.total > 0 || size.total === 0);
+      setSizes(filteredSizes);
+    } else {
+      // Nếu không có màu sắc nào được chọn, hiển thị tất cả các kích thước có tổng lớn hơn 0
+      const sizes = colors.flatMap((color) => color.sizes);
+      const filteredSizes = sizes.filter((size) => size.total > 0);
+      setSizes(filteredSizes);
+    }
+  }, [selectedColor, colors]);
+
   const handleColorChoose = (i) => {
     setSelectedColorI(i);
     setSelectedColor(product?.colors[i]?.value || '');
   };
   const handleSizeChoose = (i) => {
-    if (allSizes[i]?.total === 0) {
+    if (sizes[i]?.total === 0) {
       // Nếu size đã hết hàng, không thực hiện gì cả
       return;
     }
     setSelectedSizeI(i);
-    setSelectedSize(allSizes[i]?.value);
+    setSelectedSize(sizes[i]?.value);
   };
   React.useEffect(() => {
-    if (allSizes.length > 0) {
-      if (allSizes[0]?.total === 0) {
-        const nextAvailableSizeIndex = allSizes.findIndex((size, index) => index !== 0 && size.total > 0);
+    if (sizes.length > 0) {
+      if (sizes[0]?.total === 0) {
+        const nextAvailableSizeIndex = sizes.findIndex((size, index) => index !== 0 && size.total > 0);
         if (nextAvailableSizeIndex !== -1) {
           setSelectedSizeI(nextAvailableSizeIndex);
-          setSelectedSize(allSizes[nextAvailableSizeIndex]?.value);
+          setSelectedSize(sizes[nextAvailableSizeIndex]?.value);
         }
       } else {
-        setSelectedSize(allSizes[0]?.value || '');
+        setSelectedSize(sizes[0]?.value || '');
       }
     }
-  }, [allSizes]);
+  }, [sizes]);
   const getColor = async () => {
     try {
       const res = await productApi.getColor(product?.id);
@@ -286,7 +296,7 @@ const DetailProduct = () => {
                               <div className="product-gallery__item boxlazy-img">
                                 <div className="boxlazy-img__insert lazy-img__prod">
                                   <span className="boxlazy-img__aspect">
-                                    <img src={`${API_URL_IMAGE}${item.url}`} />
+                                    <ImageMagnifier src={`${API_URL_IMAGE}${item.url}`} />
                                   </span>
                                 </div>
                               </div>
@@ -297,7 +307,7 @@ const DetailProduct = () => {
                     <Swiper
                       onSwiper={handleThumbsSwiper}
                       spaceBetween={10}
-                      slidesPerView={4}
+                      slidesPerView={5}
                       freeMode={true}
                       navigation={true}
                       watchSlidesProgress={true}
@@ -421,7 +431,7 @@ const DetailProduct = () => {
                                   >
                                     <div className="pro-title">Kích thước: </div>
                                     <div className="select-swap">
-                                      {allSizes.map((size, i) => (
+                                      {sizes.map((size, i) => (
                                         <div
                                           className={`n-sd swatch-element ${size.total === 0 ? 'soldout' : ''}`}
                                           key={i}
@@ -774,8 +784,8 @@ const DetailProduct = () => {
                                   data-src="//theme.hstatic.net/200000592359/1001011894/14/product_info2_desc1_img.png?v=423"
                                   src="//theme.hstatic.net/200000592359/1001011894/14/product_info2_desc1_img.png?v=423"
                                   alt="Đổi trả trong
-7 ngày
-nếu sản phẩm lỗi"
+                                    7 ngày
+                                    nếu sản phẩm lỗi"
                                 />
                               </div>
                               <div className="item--text">Đổi trả trong 7 ngày nếu sản phẩm lỗi</div>
@@ -830,24 +840,10 @@ nếu sản phẩm lỗi"
                       <div className="product-desc__inner">
                         <div className="product-desc__content expandable-toggle opened">
                           <div className="desc-content" style={isShow ? { maxHeight: 'none' } : { maxHeight: 230 }}>
-                            <div className="desc-content-js">
-                              <ul>
-                                <li>Chất vải: Thun Cotton, Co giãn 4 chiều, Dày, Mịn, Đẹp</li>
-                                <li>Form áo rộng nên thích hợp cho cả Nam và Nữ</li>
-                                <li>Áo thiết kế cổ tròn, tay ngắn, đường may tinh tế</li>
-                                <li>Kích thước hình in lớn, không giới hạn màu sắc</li>
-                                <li>Cắt may và in ấn trực tiếp tại xưởng không qua trung gian</li>
-                                <li>Chất liệu thun mềm mại co giãn tốt, thoáng mát.</li>
-                                <li>Thiết kế thời trang phù hợp xu hướng hiện nay.</li>
-                                <li>
-                                  Áo được thiết kế đẹp, chuẩn form, đường may sắc xảo, vải cotton dày, mịn, thấm hút mồ
-                                  hôi tạo sự thoải mái khi mặc.
-                                </li>
-                                <li>Quá trình sản xuất ít sử dụng hóa chất, thân thiện với môi trường.</li>
-                                <li>Dễ dàng phối trang phục , thích hợp đi chơi đi làm đi dạo phố.</li>
-                              </ul>
-                              <div>&nbsp;</div>
-                            </div>
+                            <div
+                              className="desc-content-js"
+                              dangerouslySetInnerHTML={{ __html: product?.description }}
+                            ></div>
                           </div>
                           <div className={`description-btn ${isShow ? 'is-show' : ''}`}>
                             <button
@@ -1113,7 +1109,7 @@ nếu sản phẩm lỗi"
                       onChange={(e) => handleSizeChoose(e.target.value)}
                       value={selectedColorI}
                     >
-                      {allSizes.map((item, i) => (
+                      {sizes.map((item, i) => (
                         <option className={`n-sd swatch-element ${item.total === 0 ? 'hide' : ''}`} key={i} value={i}>
                           {item.value}
                         </option>

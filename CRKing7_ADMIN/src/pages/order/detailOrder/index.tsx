@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Api from '~/api/apis';
 import { REQUEST_API } from '~/constants/method';
 import { RootState } from '~/redux/reducers';
@@ -13,6 +13,7 @@ import DatePicker from 'react-datepicker';
 import { formatDate } from '~/constants/formatDate';
 import provinceApi from '~/api/province.apis';
 import { City, District, Ward } from '~/types/province.type';
+import LoadingPage from '~/components/loadingPage';
 
 const customStyles = {
   content: {
@@ -67,6 +68,7 @@ const ModalCus = ({ isOpen, closeModal, title, content, onClick, shipDate, onCha
 const DetailOrder = () => {
   const location = useLocation();
   const id = location.state;
+  const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
   const [order, setOrder] = React.useState<Order>();
@@ -326,12 +328,19 @@ const DetailOrder = () => {
     }
   };
   const handleAction = async () => {
-    if (order?.status === 1) {
-      await handleConfirm();
-    } else if (order?.status === 2) {
-      await handleShipping();
-    } else if (order?.status === 3) {
-      await handleSuccess();
+    try {
+      setIsLoading(true);
+      if (order?.status === 1) {
+        await handleConfirm();
+      } else if (order?.status === 2) {
+        await handleShipping();
+      } else if (order?.status === 3) {
+        await handleSuccess();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -388,6 +397,7 @@ const DetailOrder = () => {
   const wardName = wards.find((ward) => ward.code === parseInt(order?.wards || ''));
   return (
     <>
+      {isLoading && <LoadingPage />}
       <div className="flex mt-0">
         <div className="flex flex-col border rounded-md p-5 w-[70%]">
           <span className="text-lg font-semibold text-blue">Thông tin đơn hàng</span>
@@ -530,6 +540,12 @@ const DetailOrder = () => {
               <span className="text-base text-black font-bold">Tổng tiền của đơn hàng: </span>
               <span className="text-base ml-5">{formatPrice(totalCost)}</span>
             </div>
+          </div>
+          <div
+            className="flex items-center justify-center bg-blue h-10 rounded-md w-[30%] self-end mt-[60%] cursor-pointer"
+            onClick={() => navigate(-1)}
+          >
+            <span className="text-black font-bold">Quay lại</span>
           </div>
         </div>
       </div>

@@ -10,10 +10,12 @@ import com.crking7.datn.exceptions.ResourceNotFoundException;
 import com.crking7.datn.repositories.BannerRepository;
 import com.crking7.datn.repositories.CategoryRepository;
 import com.crking7.datn.services.BannerService;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -106,29 +108,32 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
-    public List<BannerResponse> getBanners(int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Banner> banners = bannerRepository.findByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (!banners.isEmpty()) {
-            return banners.stream()
-                    .map(bannerMapper::mapModelToResponse)
-                    .toList();
-        } else {
-            return null;
+    public Pair<List<BannerResponse>, Integer> getBanners(int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Banner> banners = bannerRepository.findByStatus(pageable, Constants.ACTIVE_STATUS);
+        int total = (int) banners.getTotalElements();
+        List<BannerResponse> bannerResponses = banners.getContent().stream()
+                .map(bannerMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(bannerResponses, total);
     }
 
     @Override
-    public List<BannerResponse> getAllBanners(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Banner> banners = bannerRepository.findAllBanners(keyword, pageable);
-        if (!banners.isEmpty()) {
-            return banners.stream()
-                    .map(bannerMapper::mapModelToResponse)
-                    .toList();
-        } else {
-            return null;
+    public Pair<List<BannerResponse>, Integer> getAllBanners(String keyword,Integer status, int pageNo, int pageSize, String sortBy,boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<Banner> banners = bannerRepository.findAllBanners(keyword,status, pageable);
+        int total = (int) banners.getTotalElements();
+        List<BannerResponse> bannerResponses = banners.getContent().stream()
+                .map(bannerMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(bannerResponses, total);
     }
 
     @Override

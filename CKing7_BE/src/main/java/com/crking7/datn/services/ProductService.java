@@ -3,7 +3,9 @@ package com.crking7.datn.services;
 import com.crking7.datn.models.Product;
 import com.crking7.datn.web.dto.request.ProductRequest;
 import com.crking7.datn.web.dto.request.ProductUDRequest;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.ProductResponse;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -11,12 +13,13 @@ public interface ProductService {
     /**
      *
      */
-    List<ProductResponse> getProducts(int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProducts(int pageNo, int pageSize, String sortBy);
 
-    List <ProductResponse> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice,
-                                          Long categoryId, int pageNo, int pageSize, String sortBy,boolean desc);
+    Pair<List<ProductResponse>, Integer> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice,
+                                          Long categoryId,Long saleId, int pageNo, int pageSize, String sortBy,boolean desc);
 
-    List<ProductResponse> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getALLProductsAdmin(String keyword, Integer status, Integer minPrice, Integer maxPrice,
+                                                             Long categoryId, int pageNo, int pageSize, String sortBy, boolean desc);
 
     ProductResponse getProduct(long productId);
 
@@ -28,17 +31,19 @@ public interface ProductService {
 
     List<ProductResponse> getProductBySaleAdmin(String Keyword, Long saleId);
 
-    List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy);
+    List<ProductResponse> getProductBySale();
 
-    List<ProductResponse> getProductsByCategory(long categoryId, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> getProductsByValueSize(String valueSize, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductsByCategory(long categoryId, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> getProductsByValueColor(String valueColor, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductsByValueSize(String valueSize, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> getProductsByPrice(int minPrice, int maxPrice, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductsByValueColor(String valueColor, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> searchProduct(String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductsByPrice(int minPrice, int maxPrice, int pageNo, int pageSize, String sortBy);
+
+    Pair<List<ProductResponse>, Integer> searchProduct(String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
 
     //    List<ProductResponse> getProductByColorSizePriceCategory(String valueSize, String valueColor, int minPrice, int maxPrice, long categoryId, int pageNo, int pageSize, String sortBy);
     ProductResponse createProduct(ProductRequest productRequest);
@@ -51,15 +56,19 @@ public interface ProductService {
 
     void deleteProduct(long id);
 
-    List<ProductResponse> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy);
 
     List<ProductResponse> getRelatedProducts(Long categoryId, int limit);
 
     List<ProductResponse> getRandomProducts();
 
-    List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getBestSellerProducts(int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy);
 
-    List<ProductResponse> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy);
+    Pair<List<ProductResponse>, Integer> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy);
+
+    Long totalProduct();
+
+    List<ProductResponse> getProductsByCategoryId(Long categoryId);
 }

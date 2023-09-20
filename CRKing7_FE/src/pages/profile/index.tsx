@@ -129,42 +129,49 @@ const Profile = () => {
     }
   };
   const getDistricts = async () => {
-    try {
-      const res = await provinceApi.districtApi(user?.addresses[0].province);
-      if (res.status === 200) {
-        setDistricts(res.data.districts);
+    if (!!user && user?.addresses.length > 0) {
+      try {
+        const res = await provinceApi.districtApi(user?.addresses[0].province);
+        if (res.status === 200) {
+          setDistricts(res.data.districts);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
   };
   const getWards = async () => {
-    try {
-      const res = await provinceApi.wardApi(user?.addresses[0].district);
+    if (!!user && user?.addresses.length > 0) {
+      try {
+        const res = await provinceApi.wardApi(user?.addresses[0].district);
 
-      if (res.status === 200) {
-        setWards(res.data.wards);
+        if (res.status === 200) {
+          setWards(res.data.wards);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
   };
   React.useEffect(() => {
     getCities();
   }, []);
   React.useEffect(() => {
-    if (!!user) {
+    if (!!user && user.addresses.length > 0) {
       getDistricts();
     }
   }, [user]);
   React.useEffect(() => {
-    if (!!user) {
+    if (!!user && user.addresses.length > 0) {
       getWards();
     }
   }, [user]);
-  const cityName = cities.find((city) => city.code === parseInt(user?.addresses[0].province || ''));
-  const districtName = districts.find((district) => district.code === parseInt(user?.addresses[0].district || ''));
-  const wardName = wards.find((ward) => ward.code === parseInt(user?.addresses[0].wards || ''));
+  let cityName, districtName, wardName;
+  if (user && user.addresses && user.addresses.length > 0) {
+    cityName = cities.find((city) => city.code === parseInt(user?.addresses[0].province || ''));
+    districtName = districts.find((district) => district.code === parseInt(user?.addresses[0].district || ''));
+    wardName = wards.find((ward) => ward.code === parseInt(user?.addresses[0].wards || ''));
+  }
   return (
     <div className="layout-account">
       <div className="container">
@@ -183,15 +190,15 @@ const Profile = () => {
                   </h2>
                   <p className="email ">{user?.email}</p>
                   <div className="address ">
-                    {user?.addresses.length === 0 ? (
-                      <p>Chưa có địa chỉ</p>
-                    ) : (
+                    {user?.addresses && user.addresses.length > 0 ? (
                       <>
-                        <p>{user?.addresses[0].addressDetail}</p>
+                        <p>{user.addresses[0].addressDetail}</p>
                         <p>{wardName?.name}</p>
                         <p>{districtName?.name}</p>
                         <p>{cityName?.name}</p>
                       </>
+                    ) : (
+                      <p>Chưa có địa chỉ</p>
                     )}
 
                     <p>{user?.phone}</p>

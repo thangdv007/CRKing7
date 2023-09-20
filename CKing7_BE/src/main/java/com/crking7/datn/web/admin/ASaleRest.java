@@ -8,10 +8,8 @@ import com.crking7.datn.services.SaleService;
 import com.crking7.datn.web.dto.request.ArticleRequest;
 import com.crking7.datn.web.dto.request.BannerRequest;
 import com.crking7.datn.web.dto.request.SaleRequest;
-import com.crking7.datn.web.dto.response.ArticleResponse;
-import com.crking7.datn.web.dto.response.BannerResponse;
-import com.crking7.datn.web.dto.response.CategoryResponse;
-import com.crking7.datn.web.dto.response.SaleResponse;
+import com.crking7.datn.web.dto.response.*;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,22 +57,23 @@ public class ASaleRest {
 
     @GetMapping("")
     public ResponseEntity<?> getAll(@RequestParam(required = false) String keyword,
-                                    @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                    @RequestParam(required = false) Integer isActive,
+                                    @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                     @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
-                                    @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+                                    @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                    @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection) {
         try {
-            List<SaleResponse> saleResponses = saleService.getAll(keyword, pageNo, pageSize, sortBy);
-            if (saleResponses != null) {
-                int total = saleResponses.size();
+            Pair<List<SaleResponse>, Integer> result = saleService.getAll(keyword, isActive, pageNo, pageSize, sortBy, sortDirection.equals("desc"));
+            List<SaleResponse> saleResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!saleResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(saleResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(201, true, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi! " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
 

@@ -50,7 +50,6 @@ const AddCategory = () => {
     setFileImg(fileFromLocal);
     // console.log(fileFromLocal);
   };
-
   const getParentCategory = async () => {
     if (!!token) {
       try {
@@ -64,19 +63,8 @@ const AddCategory = () => {
         ]);
         if (res.status) {
           setParentCategory(res.data);
-        } else {
-          toast.error(`Lỗi`, {
-            position: 'top-right',
-            pauseOnHover: false,
-            theme: 'dark',
-          });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
         console.error(error);
       }
     } else {
@@ -153,7 +141,7 @@ const AddCategory = () => {
   };
   const handleChooseParent = (e) => {
     const parentId = e.target.value;
-    if (parentId !== '-- Chọn danh mục cha --' && parentId !== 'Đây là danh mục cha') {
+    if (parentId !== '-- Chọn danh mục cha --' || parentId !== 'Đây là danh mục cha') {
       setParentId(parentId);
     }
   };
@@ -259,7 +247,7 @@ const AddCategory = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={() => createCategory()}
           >
-            <span>Tạo mới</span>
+            <span className="text-black font-bold">Tạo mới</span>
           </div>
         </div>
       </div>

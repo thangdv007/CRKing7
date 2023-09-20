@@ -26,6 +26,7 @@ const ThankYou = () => {
   const order: Order = orderJSON ? JSON.parse(orderJSON) : {};
   const data = dataJSON ? JSON.parse(dataJSON) : null;
   const productData: Product[] = productDataJSON ? JSON.parse(productDataJSON) : [];
+  const [order2, setOrder2] = React.useState<Order>();
 
   const [success, setSuccess] = React.useState(true);
   const [isShowmore, setIsShowmore] = React.useState(false);
@@ -79,7 +80,19 @@ const ThankYou = () => {
     }
   };
   React.useEffect(() => {
-    getResultVNPay();
+    if (
+      urlParams.get('vnp_Amount') &&
+      urlParams.get('vnp_BankCode') &&
+      urlParams.get('vnp_BankTranNo') &&
+      urlParams.get('vnp_CardType') &&
+      urlParams.get('vnp_OrderInfo') &&
+      urlParams.get('vnp_PayDate') &&
+      urlParams.get('vnp_ResponseCode') &&
+      urlParams.get('vnp_TransactionNo') &&
+      urlParams.get('vnp_TxnRef')
+    ) {
+      getResultVNPay();
+    }
   }, []);
   const createOrder = async () => {
     try {
@@ -117,7 +130,25 @@ const ThankYou = () => {
     }
   };
   React.useEffect(() => {
-    getResultZaloPay();
+    if (urlParams.get('apptransid')) {
+      getResultZaloPay();
+    }
+  }, []);
+  const getOrder = async () => {
+    try {
+      const res = await cartApi.getDetailOrder(order.id);
+      if (res.data.status) {
+        setOrder2(res.data.data);
+      } else {
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  React.useEffect(() => {
+    if (order) {
+      getOrder();
+    }
   }, []);
   const handleBack = () => {
     localStorage.removeItem('cartItem');
@@ -177,7 +208,7 @@ const ThankYou = () => {
   const districtName = districts.find((district) => district.code === parseInt(data?.district || ''));
   const wardName = wards.find((ward) => ward.code === parseInt(data?.wards || ''));
   return (
-    <div className="flexbox">
+    <div className="flexbox check-out">
       <div className="banner">
         <div className="wrap">
           <Link to={path.home} className="logo cursor-pointer">
@@ -375,7 +406,7 @@ const ThankYou = () => {
                         </svg>
                         <div className="os-header-heading">
                           <h2 className="os-header-title">Đặt hàng thành công</h2>
-                          <span className="os-order-number">Mã đơn hàng #{order.codeOrders}</span>
+                          <span className="os-order-number">Mã đơn hàng #{order2?.codeOrders}</span>
                           <span className="os-description">Cám ơn bạn đã mua hàng!</span>
                         </div>
                       </div>

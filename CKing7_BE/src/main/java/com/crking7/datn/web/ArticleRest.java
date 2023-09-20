@@ -4,6 +4,7 @@ import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.helper.ApiResponsePage;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.services.ArticleService;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,17 +26,17 @@ public class ArticleRest {
     public ResponseEntity<?> getArticles(@RequestParam(value = "pageNo", defaultValue = "1")int pageNo,
                                          @RequestParam(value = "pageSize", defaultValue = "20")int pageSize,
                                          @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
-        try{
-            List<ArticleResponse> articleResponses = articleService.getArticles(pageNo, pageSize, sortBy);
-            if (articleResponses != null) {
-                int total = articleResponses.size();
+        try {
+            Pair<List<ArticleResponse>, Integer> result  = articleService.getArticles(pageNo, pageSize, sortBy);
+            List<ArticleResponse> articleResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!articleResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(articleResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
                 return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }
@@ -52,8 +53,8 @@ public class ArticleRest {
             return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/relatedArticle/{id}")
-    public ResponseEntity<?> getRelatedArticles(@PathVariable(name = "id") Long categoryId) {
+    @GetMapping("/relatedArticle")
+    public ResponseEntity<?> getRelatedArticles(@RequestParam(value = "categoryId") Long categoryId) {
         try {
             List<ArticleResponse> articleResponses = articleService.getRelatedArticles(categoryId);
             if (articleResponses == null) {
@@ -70,17 +71,17 @@ public class ArticleRest {
                                                    @RequestParam(value = "pageNo", defaultValue = "1")int pageNo,
                                                    @RequestParam(value = "pageSize", defaultValue = "20")int pageSize,
                                                    @RequestParam(value = "sortBy",defaultValue = "id")String sortBy){
-        try{
-            List<ArticleResponse> articleResponses = articleService.getArticleByCategory(pageNo, pageSize, sortBy, categoryId);
-            if (articleResponses != null) {
-                int total = articleResponses.size();
+        try {
+            Pair<List<ArticleResponse>, Integer> result  = articleService.getArticleByCategory(pageNo, pageSize, sortBy, categoryId);
+            List<ArticleResponse> articleResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!articleResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(articleResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Lỗi!", HttpStatus.BAD_REQUEST);
         }
     }

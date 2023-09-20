@@ -17,6 +17,10 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     List<Sale> findByIsActive(Integer isActive);
 
-    @Query("SELECT s FROM Sale s WHERE (:keyword IS NULL OR s.name LIKE %:keyword%)")
-    Page<Sale> findAllSale(@Param("keyword") String keyword, Pageable pageable);
+    @Query("SELECT s FROM Sale s WHERE (:keyword IS NULL OR s.name LIKE %:keyword%) " +
+            "AND (:isActive IS NULL OR s.isActive = :isActive)"
+    )
+    Page<Sale> findAllSale(@Param("keyword") String keyword,
+                           @Param("isActive") Integer isActive,
+                           Pageable pageable);
 }

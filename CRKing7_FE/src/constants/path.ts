@@ -25,5 +25,9 @@ const path = {
   thankYou: '/thank-you',
   //bài viết
   detailArticle: '/detail-article',
+  article: '/article',
+
+  //liên hệ
+  contact: '/contact',
 } as const;
  export default path;

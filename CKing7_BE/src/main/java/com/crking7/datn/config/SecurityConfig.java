@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/logout").permitAll()
                 .requestMatchers("/api/forgotPass").permitAll()
                 .requestMatchers("/api/admin/user/addEmp").hasRole("ADMIN")
-                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "EMPLOYEE")
+                    .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "EMPLOYEE")
                 .requestMatchers("/api/category/**").permitAll()
                 .requestMatchers("/api/product/**").permitAll()
                 .requestMatchers("/api/banner/**").permitAll()

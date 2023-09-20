@@ -3,6 +3,7 @@ package com.crking7.datn.services.impl;
 import com.crking7.datn.config.Constants;
 import com.crking7.datn.mapper.ProductMapper;
 import com.crking7.datn.models.*;
+import com.crking7.datn.models.dtos.TopUserDto;
 import com.crking7.datn.repositories.*;
 import com.crking7.datn.services.NotificationService;
 import com.crking7.datn.utils.EmailUtils;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -26,9 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
@@ -234,12 +234,12 @@ public class OrdersServiceImpl implements OrdersService {
         orderItem.setQuantity(orderItem.getQuantity() + 1);
         orderItemRepository.save(orderItem);
         if (orderItem.getQuantity() > size.getTotal()) {
-            String errorMessage  = String.format(
+            String errorMessage = String.format(
                     "Size %s không còn đủ số lượng. Vui lòng chọn ít hơn %d sản phẩm",
                     size.getValue(),
                     size.getTotal()
             );
-            return errorMessage ;
+            return errorMessage;
         } else if (size.getTotal() == 0) {
             return "Size này đang hết hàng vui lòng chọn sản phẩm khác";
         } else {
@@ -296,7 +296,7 @@ public class OrdersServiceImpl implements OrdersService {
             orders.setCreateDate(date);
             orders.setOrderDate(date);
             orders.setModifiedDate(date);
-            if(orders.getCodeOrders() == null) {
+            if (orders.getCodeOrders() == null) {
                 orders.setCodeOrders(Utils.getRandomNumber(8));
             }
             //đã thanh toán online
@@ -593,9 +593,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     //lấy tất cả đơn hàng theo status
     @Override
-    public List<OrdersResponse> getOrder(Integer status, String startDate, String endDate, int pageNo, int pageSize, String sortBy, boolean asc) {
+    public Pair<List<OrdersResponse>, Integer> getOrder(String keyword, Integer status, Boolean isCheckout, String startDate, String endDate, int pageNo, int pageSize, String sortBy, boolean asc) {
         Sort.Direction sortDirection = asc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sortDirection, sortBy);
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
         Date parsedStartDate = null;
         Date parsedEndDate = null;
         try {
@@ -608,14 +611,12 @@ public class OrdersServiceImpl implements OrdersService {
         } catch (ParseException e) {
             // Xử lý exception nếu ngày tháng không hợp lệ
         }
-        Page<Orders> ordersList = ordersRepository.getAllByStatus(status, parsedStartDate, parsedEndDate, pageable);
-        if (ordersList.isEmpty()) {
-            return null;
-        } else {
-            return ordersList.getContent().stream()
-                    .map(ordersMapper::mapToResponse)
-                    .toList();
-        }
+        Page<Orders> ordersList = ordersRepository.getAllByStatus(keyword, status, isCheckout, parsedStartDate, parsedEndDate, pageable);
+        int total = (int) ordersList.getTotalElements();
+        List<OrdersResponse> ordersResponses = ordersList.getContent().stream()
+                .map(ordersMapper::mapToResponse)
+                .toList();
+        return Pair.of(ordersResponses, total);
     }
 
     //Đếm số đơn hàng
@@ -628,6 +629,16 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public Long getTotalSoldProducts() {
         return ordersRepository.totalSoldProducts();
+    }
+    //Tổng thu nhập
+    @Override
+    public Long totalInCome() {
+        return ordersRepository.totalInCome();
+    }
+    //Tổng đơn hàng chưa được xử lý
+    @Override
+    public Long totalOrderNoProcess() {
+        return ordersRepository.totalOrderNoProcess();
     }
 
     //Thống kê tỷ lệ chuyển đổi giữa giỏ hàng và đơn hàng
@@ -648,10 +659,29 @@ public class OrdersServiceImpl implements OrdersService {
         return ordersRepository.calculateAverageProcessingTime(status);
     }
 
+    //lấy đơn hàng theo status và theo tháng
+    @Override
+    public List<Map<String, Object>> getOrderByMonth(int status) {
+        List<Object[]> objects = ordersRepository.findByMonth(status);
+        List<Map<String, Object>> orders = new ArrayList<>();
+
+        for (Object[] result : objects) {
+            Map<String, Object> orderInfo = new HashMap<>();
+            orderInfo.put("month", result[0]);
+            orderInfo.put("status", result[1]);
+            orderInfo.put("orderCount", result[2]);
+            orders.add(orderInfo);
+        }
+        return orders;
+    }
+
     //lấy tất cả đơn hàng
     @Override
     public List<OrdersResponse> getAllOrder(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Orders> orders = ordersRepository.findAllByKeyword(keyword, pageable);
         return orders.getContent().stream()
                 .map(ordersMapper::mapToResponse)

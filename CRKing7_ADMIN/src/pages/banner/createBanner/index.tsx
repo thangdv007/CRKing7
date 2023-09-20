@@ -96,9 +96,9 @@ const CreateBanner = () => {
         ]);
 
         if (res.status) {
-          setCategories(res.data.data);
+          setCategories(res.data);
         } else {
-          toast.error(`${res.data.data}`, {
+          toast.error(`${res.data}`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -195,7 +195,7 @@ const CreateBanner = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={() => createBanner()}
           >
-            <span>Tạo mới</span>
+            <span className="text-black font-bold">Tạo mới</span>
           </div>
         </div>
       </div>

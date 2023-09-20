@@ -36,7 +36,7 @@ export interface Product {
   category: number | null;
   sale: number | null;
   colors: Color;
-  images: ProductImages;
+  images: ProductImages[];
 }
 // const bb = {
 //   "id": 1,

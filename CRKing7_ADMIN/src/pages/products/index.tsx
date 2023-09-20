@@ -10,6 +10,8 @@ import { Product, ProductImages } from '~/types/product.type';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
 import SpinLoading from '~/components/loading/spinLoading';
 import Modal from 'react-modal';
+import Pagination from '~/components/paginationItems';
+import { Category } from '~/types/category.type';
 
 const customStyles = {
   content: {
@@ -22,20 +24,69 @@ const customStyles = {
   },
 };
 
+interface Params {
+  keyword: string;
+  pageNo: number;
+  sortBy: string;
+  sortDirection: string;
+  status?: number | undefined;
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
+  categoryId?: number | undefined;
+}
+
 const Product = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
-  const [page, setPage] = React.useState(0);
-  const [lastPage, setLastPage] = React.useState(0);
+  const [page, setPage] = React.useState(1);
   const [keyword, setKeyword] = React.useState('');
+  const [status, setStatus] = React.useState<number>(-1);
+  const [sortBy, setSortBy] = React.useState('id');
+  const [totalPage, setTotalPage] = React.useState(1);
+  const [sortDirection, setSortDirection] = React.useState();
+  const [minPrice, setMinPrice] = React.useState();
+  const [maxPrice, setMaxPrice] = React.useState();
+  const [categoryId, setCategoryId] = React.useState<number>(-1);
+  const [allCategory, setAllCategry] = React.useState<Category[]>([]);
   const navigate = useNavigate();
   const [categoriesMapping, setCategoriesMapping] = React.useState({});
   const [salesMapping, setSalesMapping] = React.useState({});
   const [loadding, setLoading] = React.useState(false);
-
+  const [chooseFilter, setChooseFilter] = React.useState(null);
+  const [showFilter, setShowFilter] = React.useState(false);
+  const showFilterRef = React.useRef(null);
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (showFilterRef.current && !showFilterRef.current.contains(event.target)) {
+        // Nếu sự kiện click xảy ra bên ngoài div, đóng dropdown
+        setShowFilter(false);
+      }
+    }
+    // Đăng ký sự kiện click trên document
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      // Hủy đăng ký sự kiện khi component unmount
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+  const filterOptions = [
+    { id: -1, title: 'Tất Cả' },
+    { id: 1, title: 'Hoạt Động' },
+    { id: 0, title: 'Đã Khóa' },
+    ...allCategory,
+  ];
+  const handleChooseFilter = (item) => {
+    if (item.id === -1 || item.id === 0 || item.id === 1) {
+      setStatus(item.id);
+      setCategoryId('');
+    } else {
+      setStatus('');
+      setCategoryId(item.id);
+    }
+    setChooseFilter(item.id);
+    setShowFilter(false);
+  };
   const [product, setProduct] = React.useState<Product[]>([]);
-  const [images, setImages] = React.useState<ProductImages>();
-
   const [isOpen, setIsOpen] = React.useState(false);
   const [productId, setProductId] = React.useState<number>();
 
@@ -46,14 +97,56 @@ const Product = () => {
   const closeModal = () => {
     setIsOpen(false);
   };
-
+  const getAllCategory = async () => {
+    if (!!token) {
+      try {
+        const url = Api.getAllCategoryByParentId(1);
+        const [res] = await Promise.all([
+          REQUEST_API({
+            url: url,
+            method: 'get',
+            token: token,
+          }),
+        ]);
+        if (res.status) {
+          const category = res.data;
+          setAllCategry(category);
+        } else {
+          toast.error(`Có lỗi xảy ra`, {
+            position: 'top-right',
+            pauseOnHover: false,
+            theme: 'dark',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+  React.useEffect(() => {
+    getAllCategory();
+  }, []);
   const getAllProduct = async () => {
     if (!!token) {
       try {
         setLoading(true);
-        const currentPage = 0;
-        setPage(currentPage);
-        const url = Api.getAllProduct(currentPage, keyword);
+        const params: Params = {
+          keyword: keyword,
+          pageNo: page,
+          sortBy: sortBy,
+          sortDirection: sortDirection || 'desc',
+        };
+        if (minPrice && maxPrice) {
+          params.minPrice = Number(minPrice);
+          params.maxPrice = Number(maxPrice);
+        }
+        if (status !== -1) {
+          params.status = status;
+        }
+        if (categoryId !== -1) {
+          params.categoryId = categoryId;
+        }
+        const url = Api.getAllProduct(params);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -70,6 +163,9 @@ const Product = () => {
             };
           });
           setProduct(newData);
+          const totalPages = Math.ceil(res.data.total / res.data.perPage);
+          setTotalPage(totalPages);
+          setPage(res.data.currentPage);
         } else {
           setLoading(true);
           toast.error(`${res.data.data}`, {
@@ -79,11 +175,6 @@ const Product = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
         setLoading(true);
         console.error(error);
       } finally {
@@ -95,6 +186,36 @@ const Product = () => {
   React.useEffect(() => {
     getAllProduct();
   }, []);
+  const handlePageClick = (page) => {
+    setPage(page);
+  };
+  React.useEffect(() => {
+    getAllProduct();
+  }, [page, status, sortBy, sortDirection, categoryId]);
+  const handleFindPrice = () => {
+    if (!minPrice) {
+      toast.error(`Hãy nhập giá nhỏ nhất`, {
+        pauseOnHover: false,
+        theme: 'dark',
+      });
+      return;
+    }
+    if (!maxPrice) {
+      toast.error(`Hãy nhập giá cao nhất`, {
+        pauseOnHover: false,
+        theme: 'dark',
+      });
+      return;
+    }
+    if (isNaN(Number(minPrice)) || isNaN(Number(maxPrice))) {
+      toast.error(`Giá trị không hợp lệ`, {
+        pauseOnHover: false,
+        theme: 'dark',
+      });
+      return;
+    }
+    getAllProduct();
+  };
   const getCategory = async (id: number) => {
     if (!!token) {
       try {
@@ -123,12 +244,6 @@ const Product = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   const getSale = async (id: number) => {
@@ -204,12 +319,6 @@ const Product = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   const showProduct = async (id: number) => {
@@ -240,12 +349,6 @@ const Product = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   const deleteProduct = async (id: number) => {
@@ -279,12 +382,6 @@ const Product = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
 
@@ -308,23 +405,96 @@ const Product = () => {
             ></i>
           </div>
         </div>
-        <div
-          className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
-          onClick={() => navigate(path.addProduct)}
-        >
-          <i className="bx bxs-plus-circle text-2xl text-white"></i>
+        <div className="flex items-center justify-center">
+          <div className="w-10 h-10 rounded-md mr-2 relative bg-blue flex items-center justify-center">
+            <i
+              ref={showFilterRef}
+              className="bx bx-filter text-white text-4xl cursor-pointer"
+              onClick={() => setShowFilter(!showFilter)}
+            ></i>
+            {showFilter && (
+              <ul className="absolute top-[70%] right-0 translate-y-4 transition-transform px-2 w-40 bg-blue rounded-md flex flex-col items-center justify-center">
+                {filterOptions.map((option) => (
+                  <React.Fragment key={option.id}>
+                    <li
+                      className={`py-2 cursor-pointer w-full text-center ${
+                        chooseFilter === option.id ? 'text-black font-semibold' : 'text-white'
+                      }`}
+                      onClick={() => handleChooseFilter(option)}
+                    >
+                      {option.title}
+                    </li>
+                    {option.id !== filterOptions[filterOptions.length - 1].id && (
+                      <div className="w-full bg-white h-[1px]"></div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="flex items-center justify-center">
+            <input
+              className="h-10 w-[50%] rounded-md border border-black mr-2 pl-2"
+              placeholder="Giá nhỏ nhất"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+            <input
+              className="h-10 w-[50%] rounded-md border border-black mr-2 pl-2"
+              placeholder="Giá cao nhất"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+            <i className="bx bx-search text-2xl text-blue mr-3 cursor-pointer" onClick={() => handleFindPrice()}></i>
+          </div>
+
+          <div
+            className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
+            onClick={() => navigate(path.addProduct)}
+          >
+            <i className="bx bxs-plus-circle text-2xl text-white"></i>
+          </div>
         </div>
       </div>
       <div className="w-full h-[2px] bg-black mt-5"></div>
       <div className="overflow-x-auto w-full">
         <table className="table w-full">
           <thead>
-            <tr>
-              <th className="w-[5%] text-center">SKU</th>
-              <th className="w-[15%] text-center">Tên sản phẩm</th>
+            <tr className="border-black border-b-[1px]">
+              <th
+                className="text-center"
+                onClick={() => {
+                  setSortBy('sku'), setSortDirection(!sortDirection);
+                }}
+              >
+                SKU
+                <i className="bx bx-sort text-blue text-base"></i>
+              </th>
+              <th
+                className="w-[15%] text-center"
+                onClick={() => {
+                  setSortBy('name'), setSortDirection(!sortDirection);
+                }}
+              >
+                Tên sản phẩm <i className="bx bx-sort text-blue text-base"></i>
+              </th>
               <th className="w-[10%]">Hình ảnh</th>
-              <th className="w-[10%] text-center">Giá bán</th>
-              <th className="w-[10%] text-center">Giá KM</th>
+              <th
+                className="w-[10%] text-center"
+                onClick={() => {
+                  setSortBy('price'), setSortDirection(!sortDirection);
+                }}
+              >
+                Giá bán <i className="bx bx-sort text-blue text-base"></i>
+              </th>
+              <th
+                className="w-[10%] text-center"
+                onClick={() => {
+                  setSortBy('salePrice'), setSortDirection(!sortDirection);
+                }}
+              >
+                Giá KM <i className="bx bx-sort text-blue text-base"></i>
+              </th>
               <th className="w-[10%] text-center">Khuyến mãi</th>
               <th className="w-[10%] text-center">Trạng thái</th>
               <th className="w-[10%] text-center">Danh mục</th>
@@ -337,7 +507,7 @@ const Product = () => {
               !!product.length &&
               product.map((item, i) => {
                 return (
-                  <tr key={i} className="cursor-pointer">
+                  <tr key={item.id} className="cursor-pointer border-black border-b-[1px] last:border-none">
                     <td className="text-center">{item.sku}</td>
                     <td className="text-center">{item.name}</td>
                     <td className="">
@@ -407,6 +577,7 @@ const Product = () => {
           </div>
         </div>
       </Modal>
+      <Pagination page={page} totalPage={totalPage} handlePageClick={handlePageClick} />
       {loadding && <SpinLoading />}
     </div>
   );

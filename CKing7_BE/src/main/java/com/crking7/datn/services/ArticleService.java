@@ -3,6 +3,8 @@ package com.crking7.datn.services;
 import com.crking7.datn.web.dto.request.ArticleRequest;
 import com.crking7.datn.web.dto.request.ArticleUDRequest;
 import com.crking7.datn.web.dto.response.ArticleResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -15,11 +17,13 @@ public interface ArticleService {
 
     List<ArticleResponse> getRelatedArticles(long categoryId);
 
-    List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy);
-    List<ArticleResponse> getArticlesHome();
-    List<ArticleResponse> getAllArticles(String keyword, int pageNo, int pageSize, String sortBy);
+    Pair<List<ArticleResponse>, Integer> getArticles(int pageNo, int pageSize, String sortBy);
 
-    List<ArticleResponse> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId);
+    List<ArticleResponse> getArticlesHome();
+
+    Pair<List<ArticleResponse>, Integer> getAllArticles(String keyword,Integer status, int pageNo, int pageSize, String sortBy, boolean desc);
+
+    Pair<List<ArticleResponse>, Integer> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId);
 
     ArticleResponse createArticle(ArticleRequest articleRequest);
 

@@ -186,7 +186,7 @@ const CheckOut = () => {
       });
       return;
     }
-    if (!bankTransfer || !payOnDelivery || !vnPay || !zaloPay) {
+    if (!bankTransfer && !payOnDelivery && !vnPay && !zaloPay) {
       toast.error('Vui lòng chọn 1 phương thức thanh toán', {
         position: 'top-right',
         pauseOnHover: false,

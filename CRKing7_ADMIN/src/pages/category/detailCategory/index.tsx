@@ -87,19 +87,19 @@ const DetailCategory = () => {
       </div>
       <div className="p-5">
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Mã danh mục</div>
+          <div className="w-[30%] text-black font-bold">Mã danh mục :</div>
           <div className="w-[70%] relative flex items-center">{categrory?.id}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]  text-black font-bold">Tên danh mục</div>
+          <div className="w-[30%]  text-black font-bold">Tên danh mục :</div>
           <div className="w-[70%] relative flex items-center justify-between">{categrory?.title}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]  text-black font-bold">Mô tả</div>
+          <div className="w-[30%]  text-black font-bold">Mô tả :</div>
           <div className="w-[70%] relative flex items-center">{categrory?.description}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Loại danh mục</div>
+          <div className="w-[30%] text-black font-bold">Loại danh mục :</div>
           <div className="w-[70%] relative flex items-center">
             {categrory?.type == 0 && 'Sản phẩm'}
             {categrory?.type == 1 && 'Chính sách'}
@@ -108,11 +108,11 @@ const DetailCategory = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Danh mục cha</div>
+          <div className="w-[30%] text-black font-bold">Danh mục cha :</div>
           <div className="w-[70%] relative flex items-center">{parentCategory?.title}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Banner</div>
+          <div className="w-[30%] text-black font-bold">Banner :</div>
           <div className="w-[70%] relative flex items-center">
             {!!banners &&
               !!banners.length &&
@@ -122,22 +122,22 @@ const DetailCategory = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Ngày tạo</div>
+          <div className="w-[30%] text-black font-bold">Ngày tạo :</div>
           <div className="w-[70%] relative flex items-center">{categrory?.createdDate}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Ngày sửa</div>
+          <div className="w-[30%] text-black font-bold">Ngày sửa :</div>
           <div className="w-[70%] relative flex items-center">{categrory?.modifiedDate}</div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%] text-black font-bold">Trạng thái</div>
+          <div className="w-[30%] text-black font-bold">Trạng thái :</div>
           {categrory?.status === 1 && (
-            <div className="w-[70%] relative flex items-center text-green-500">Hoạt động</div>
+            <div className="w-[70%] relative flex items-center text-green-500">Hoạt động :</div>
           )}
           {categrory?.status === 0 && <div className="w-[70%] relative flex items-center text-red-500">Đã khóa</div>}
         </div>
         <div className="flex flex-col mt-3">
-          <div className="w-[30%] text-black font-bold">Hình ảnh</div>
+          <div className="w-[30%] text-black font-bold">Hình ảnh :</div>
           <img src={`${API_URL_IMAGE}${categrory?.urlImage}`} className="object-contain" />
         </div>
         <div className="flex items-center justify-center mt-3 ml-[70%]">
@@ -145,7 +145,7 @@ const DetailCategory = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={() => navigate(path.categories)}
           >
-            <span>Quay lại</span>
+            <span className='text-black font-bold"'>Quay lại</span>
           </div>
         </div>
       </div>

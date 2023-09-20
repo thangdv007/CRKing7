@@ -57,11 +57,11 @@ const TopNav = () => {
       content: 'Hồ sơ',
       route: '/profile',
     },
-    {
-      icon: 'bx bx-cog',
-      content: 'Cài đặt',
-      route: '/setting',
-    },
+    // {
+    //   icon: 'bx bx-cog',
+    //   content: 'Cài đặt',
+    //   route: '/setting',
+    // },
     {
       icon: 'bx bx-log-out-circle bx-rotate-180',
       content: 'Đăng xuất',
@@ -203,7 +203,7 @@ const TopNav = () => {
             badge={notifications.length > 0 ? `${notifications.length}` : '0'}
             contentData={notifications}
             renderItems={(item, index) => renderNotificationItem(item, index, () => readNotification(item))}
-            renderFooter={() => <Link to="/">View All</Link>}
+            // renderFooter={() => <Link to="/">View All</Link>}
           />
           {/* dropdown here */}
         </div>

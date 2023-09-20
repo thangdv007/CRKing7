@@ -9,12 +9,12 @@ interface StatusCardProps {
 
 const StatusCard = (props: StatusCardProps) => {
   return (
-    <div className="status-card">
+    <div className="status-card h-[135px]">
       <div className="status-card__icon">
         <i className={props.icon}></i>
       </div>
       <div className="status-card__info">
-        <h4>{props.count}</h4>
+        <p>{props.count}</p>
         <span>{props.title}</span>
       </div>
     </div>

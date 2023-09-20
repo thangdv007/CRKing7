@@ -24,13 +24,12 @@ public class ProductImageServiceImpl implements ProductImageService {
         this.productImageRepository = productImageRepository;
         this.productImageMapper = productImageMapper;
     }
+
     @Override
     public void delete(long id) {
         ProductImage productImage = productImageRepository.findById(id).orElseThrow();
-        if(productImage != null){
-            productImage.setProduct(null);
-            productImageRepository.save(productImage);
-        }
+        productImage.setProduct(null);
+        productImageRepository.save(productImage);
         productImageRepository.delete(productImage);
     }
 }

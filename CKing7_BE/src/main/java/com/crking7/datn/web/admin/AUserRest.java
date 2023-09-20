@@ -2,12 +2,16 @@ package com.crking7.datn.web.admin;
 
 import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.helper.ApiResponsePage;
+import com.crking7.datn.models.dtos.TopUserDto;
 import com.crking7.datn.web.dto.request.AddEmpRequest;
+import com.crking7.datn.web.dto.response.BannerResponse;
+import com.crking7.datn.web.dto.response.ProductResponse;
 import com.crking7.datn.web.dto.response.UserResponse;
 import com.crking7.datn.services.UserService;
 import com.crking7.datn.web.dto.request.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,18 +31,21 @@ public class AUserRest {
 
     @GetMapping
     public ResponseEntity<?> getAllUsers(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "15") int pageSize,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDirection", defaultValue = "asc") String sortDirection) {
         try {
-            List<UserResponse> userResponses = userService.getAllUsers(pageNo, pageSize, sortBy, sortDirection.equals("asc"));
-            int total = userResponses.size();
-            if (userResponses != null && !userResponses.isEmpty()) {
+            Pair<List<UserResponse>, Integer> result = userService.getAllUsers(keyword,status, pageNo, pageSize, sortBy, sortDirection.equals("asc"));
+            List<UserResponse> userResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!userResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(userResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách thành công", null), HttpStatus.OK);
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -99,6 +106,32 @@ public class AUserRest {
             }
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/findTopUser")
+    public ResponseEntity<?> findTopUser() {
+        try {
+            List<TopUserDto> objects = userService.findTopUser();
+            if (objects == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", objects), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/allUser")
+    public ResponseEntity<?> findAllUser() {
+        try {
+            List<UserResponse> userResponses = userService.findAllUser();
+            if (userResponses == null) {
+                return new ResponseEntity<>(ApiResponse.build(201, false, "thành công", null), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(ApiResponse.build(200, true, "thành công", userResponses), HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(ApiResponse.build(404, true, e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

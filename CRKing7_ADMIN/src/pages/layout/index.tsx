@@ -39,6 +39,9 @@ import Order from '../order';
 import DetailOrder from '../order/detailOrder';
 import EditOrder from '../order/editOrder';
 
+import './styles.css';
+import Analytics from '../analytics';
+
 const Layout = () => {
   const themeReducer = useSelector((state: RootState) => state.ThemeReducer);
   const dispatch = useDispatch();
@@ -55,10 +58,22 @@ const Layout = () => {
     const { pathname } = useLocation();
 
     React.useEffect(() => {
-      window.scrollTo(0, 0); // Di chuyển trang lên đầu
+      const scrollToTop = () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      };
+
+      document.body.classList.add('scroll-fade-out');
+      scrollToTop();
+
+      setTimeout(() => {
+        document.body.classList.remove('scroll-fade-out');
+      }, 300);
     }, [pathname]);
 
-    return null; // Không có đầu ra giao diện thị giác
+    return null;
   };
 
   return (
@@ -101,6 +116,7 @@ const Layout = () => {
               <Route path={path.orders} element={<Order />} />
               <Route path={path.detailOrder} element={<DetailOrder />} />
               <Route path={path.editOrder} element={<EditOrder />} />
+              <Route path={path.analytics} element={<Analytics />} />
             </Routes>
           </Suspense>
         </div>

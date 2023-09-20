@@ -7,7 +7,9 @@ import com.crking7.datn.web.dto.request.BannerRequest;
 import com.crking7.datn.web.dto.response.BannerResponse;
 import com.crking7.datn.services.BannerService;
 import com.crking7.datn.web.dto.response.CategoryResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,45 +57,43 @@ public class ABannerRest {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getBanners(@RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+    public ResponseEntity<?> getBanners(@RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                         @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
                                         @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
         try {
-            List<BannerResponse> bannerResponses = bannerService.getBanners(pageNo, pageSize, sortBy);
-            if (bannerResponses != null && !bannerResponses.isEmpty()) {
-                int total = bannerResponses.size();
+            Pair<List<BannerResponse>, Integer> result = bannerService.getBanners(pageNo, pageSize, sortBy);
+            List<BannerResponse> bannerResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!bannerResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(bannerResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách không thành công", null), HttpStatus.OK);
-
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi! " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
 
     @GetMapping("/allBanner")
     public ResponseEntity<?> getAllBanners(@RequestParam(required = false) String keyword,
-                                           @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+                                           @RequestParam(required = false) Integer status,
+                                           @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
-                                           @RequestParam(value = "sortBy", defaultValue = "id") String sortBy) {
+                                           @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+                                           @RequestParam(value = "sortDirection", defaultValue = "desc") String sortDirection) {
         try {
-            List<BannerResponse> bannerResponses = bannerService.getAllBanners(keyword, pageNo, pageSize, sortBy);
-            if (bannerResponses != null && !bannerResponses.isEmpty()) {
-                int total = bannerResponses.size();
+            Pair<List<BannerResponse>, Integer> result = bannerService.getAllBanners(keyword,status, pageNo, pageSize, sortBy,sortDirection.equals("desc"));
+            List<BannerResponse> bannerResponses = result.getFirst();
+            int total = result.getSecond();
+            if (!bannerResponses.isEmpty()) {
                 List<Object> data = new ArrayList<>(bannerResponses);
                 return new ResponseEntity<>(ApiResponsePage.build(200, true, pageNo, pageSize, total, "Lấy danh sách thành công", data), HttpStatus.OK);
             } else {
-                int total = 0;
-                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "Lấy danh sách không thành công", null), HttpStatus.OK);
-
+                return new ResponseEntity<>(ApiResponsePage.build(201, false, pageNo, pageSize, total, "thất bại", null), HttpStatus.OK);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi! " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi " + e.getMessage());
         }
     }
 
@@ -123,7 +123,7 @@ public class ABannerRest {
                 }
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi!"+ e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi!" + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -137,6 +137,7 @@ public class ABannerRest {
         }
 
     }
+
     @PutMapping("/showBanner/{id}")
     public ResponseEntity<?> showBanner(@PathVariable("id") long id) {
         try {

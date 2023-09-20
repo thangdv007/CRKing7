@@ -19,8 +19,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,21 +70,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProducts(int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
+    public Pair<List<ProductResponse>, Integer> getProducts(int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
     }
 
     @Override
     @Transactional
-    public List<ProductResponse> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice, Long categoryId, int pageNo, int pageSize, String sortBy, boolean desc) {
+    public Pair<List<ProductResponse>, Integer> getALLProducts(List<String> valueSize, List<String> valueColor, Integer minPrice, Integer maxPrice, Long categoryId,Long saleId, int pageNo, int pageSize, String sortBy, boolean desc) {
         Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
         if (pageNo < 1) {
             pageNo = 1;
@@ -100,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductResponse> productResponses = new ArrayList<>();
         Set<Long> visitedProductIds = new HashSet<>(); // Sử dụng Set để theo dõi sản phẩm đã xuất hiện
-
+        int total = 0;
         // Lặp qua từng giá trị trong danh sách valueSize và valueColor
         for (String size : valueSize) {
             for (String color : valueColor) {
@@ -110,9 +113,10 @@ public class ProductServiceImpl implements ProductService {
                         minPrice,
                         maxPrice,
                         categoryId,
+                        saleId,
                         pageable
                 );
-
+                total += (int) products.getTotalElements();
                 for (Product product : products) {
                     if (!visitedProductIds.contains(product.getId())) {
                         ProductResponse response = productMapper.mapModelToResponse(product);
@@ -123,10 +127,9 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        return productResponses;
+
+        return Pair.of(productResponses, total);
     }
-
-
 
 
     @Override
@@ -166,96 +169,107 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy) {
+    public Pair<List<ProductResponse>, Integer> getProductsByKeyword(String keyword, int pageNo, int pageSize, String sortBy) {
         if (pageNo < 1) {
             pageNo = 1;
         }
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Product> products = productRepository.searchAllByKeyword(keyword, pageable);
-        if(products == null){
-            return null;
-        }
-        return products.getContent().stream()
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
                 .map(productMapper::mapModelToResponse)
                 .toList();
+        return Pair.of(productResponses, total);
 
     }
 
     @Override
-    public List<ProductResponse> getProductsByValueSize(String valueSize, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+    public Pair<List<ProductResponse>, Integer> getProductsByValueSize(String valueSize, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Product> products = productRepository.searchAllByValueSize(valueSize, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
-        }
-    }
-
-    @Override
-    public List<ProductResponse> getProductsByValueColor(String valueColor, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.searchAllByValueColor(valueColor, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
-        }
-    }
-
-    @Override
-    public List<ProductResponse> getProductsByPrice(int minPrice, int maxPrice, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.searchAllByPrice(minPrice, maxPrice, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
-        }
-    }
-
-    @Override
-    public List<ProductResponse> searchProduct(String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.searchProductInCategory(valueSize, valueColor, minPrice, maxPrice, categoryId, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
-        }
-    }
-
-    @Override
-    public List<ProductResponse> getAllProducts(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.getAllByKeyword(keyword, pageable);
-        return products.getContent().stream()
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
                 .map(productMapper::mapModelToResponse)
                 .toList();
+        return Pair.of(productResponses, total);
     }
 
     @Override
-    public List<ProductResponse> getProductsByCategory(long categoryId, int pageNo, int pageSize, String sortBy) {
+    public Pair<List<ProductResponse>, Integer> getProductsByValueColor(String valueColor, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.searchAllByValueColor(valueColor, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
+    }
+
+    @Override
+    public Pair<List<ProductResponse>, Integer> getProductsByPrice(int minPrice, int maxPrice, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.searchAllByPrice(minPrice, maxPrice, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
+    }
+
+    @Override
+    public Pair<List<ProductResponse>, Integer> searchProduct(String valueSize, String valueColor, Integer minPrice, Integer maxPrice, long categoryId, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.searchProductInCategory(valueSize, valueColor, minPrice, maxPrice, categoryId, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
+    }
+
+    @Override
+    public Pair<List<ProductResponse>, Integer> getALLProductsAdmin(String keyword, Integer status, Integer minPrice, Integer maxPrice,
+                                                                    Long categoryId, int pageNo, int pageSize, String sortBy, boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<Product> products = productRepository.getAllProductsAdmin(keyword, status, minPrice, maxPrice, categoryId, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
+    }
+
+    @Override
+    public Pair<List<ProductResponse>, Integer> getProductsByCategory(long categoryId, int pageNo, int pageSize, String sortBy) {
         Category category = categoryRepository.findByStatusAndIdAndType(Constants.ACTIVE_STATUS, categoryId, Constants.PRODUCT_TYPE);
         if (category != null) {
-            Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
+            if (pageNo < 1) {
+                pageNo = 1;
+            }
+            Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
             Page<Product> products = productRepository.findAllByProductCategoryAndStatus(pageable, category, Constants.ACTIVE_STATUS);
 
-            if (products.isEmpty()) {
-                return null;
-            } else {
-                return products.getContent().stream()
-                        .map(productMapper::mapModelToResponse)
-                        .toList();
-            }
+            int total = (int) products.getTotalElements();
+            List<ProductResponse> productResponses = products.getContent().stream()
+                    .map(productMapper::mapModelToResponse)
+                    .toList();
+            return Pair.of(productResponses, total);
         } else {
             return null;
         }
@@ -293,9 +307,8 @@ public class ProductServiceImpl implements ProductService {
             lastId = productRepository.findNewestId();
         } catch (Exception ignored) {
         }
-        String sku = utils.generateRandomCharacters(2) + String.valueOf(productRequest.getUserId()) +
-                utils.generateRandomCharacters(3) + String.valueOf(lastId + 1);
-
+        String productName = productRequest.getName();
+        String sku = generateSkuFromProductName(productName, lastId);
         Product product = productMapper.mapRequestedToModel(productRequest);
         product.setColors(null);
         product.setSalePrice(productRequest.getPrice());
@@ -498,21 +511,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy) {
+    public Pair<List<ProductResponse>, Integer> getProductBySaleId(Long saleId, int pageNo, int pageSize, String sortBy) {
         Sale sale = saleRepository.findById(saleId).orElseThrow();
-        if (sale != null) {
-            Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-            Page<Product> products = productRepository.findAllBySaleAndStatus(sale, pageable, Constants.ACTIVE_STATUS);
-            if (products.isEmpty()) {
-                return null;
-            } else {
-                return products.getContent().stream()
-                        .map(productMapper::mapModelToResponse)
-                        .toList();
-            }
-        } else {
-            return null;
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.findAllBySaleAndStatus(sale, pageable, Constants.ACTIVE_STATUS);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
     }
 
 
@@ -554,29 +564,31 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getBestSellerProducts(int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.getBestSellerProducts(pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
+    public Pair<List<ProductResponse>, Integer> getBestSellerProducts(int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getBestSellerProducts(pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
     }
 
     @Override
-    public List<ProductResponse> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.getProductByQuantity(isActive, pageable);
-        if (products.isEmpty()) {
-            return null;
-        } else {
-            return products.getContent().stream()
-                    .map(productMapper::mapModelToResponse)
-                    .toList();
+    public Pair<List<ProductResponse>, Integer> getProductByQuantity(boolean isActive, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
         }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getProductByQuantity(isActive, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
     }
 
     @Override
@@ -588,11 +600,73 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortBy).descending());
-        Page<Product> products = productRepository.getProductNoSale(keyword, pageable);
-        return products.getContent().stream()
+    public List<ProductResponse> getProductBySale() {
+        List<Product> product = productRepository.findBySale();
+        return product.stream()
                 .map(productMapper::mapModelToResponse)
                 .toList();
     }
+
+    @Override
+    public Pair<List<ProductResponse>, Integer> getProductNoSale(String keyword, int pageNo, int pageSize, String sortBy) {
+        if (pageNo < 1) {
+            pageNo = 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
+        Page<Product> products = productRepository.getProductNoSale(keyword, pageable);
+        int total = (int) products.getTotalElements();
+        List<ProductResponse> productResponses = products.getContent().stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+        return Pair.of(productResponses, total);
+    }
+    @Override
+    public Long totalProduct() {
+        return productRepository.totalProducts();
+    }
+    @Override
+    public List<ProductResponse> getProductsByCategoryId(Long categoryId) {
+        // Tìm danh mục cha dựa trên categoryId
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            // Trường hợp không tìm thấy danh mục, có thể xử lý lỗi hoặc trả về danh sách rỗng
+            return new ArrayList<>();
+        }
+        // Tạo danh sách để chứa tất cả sản phẩm
+        List<Product> allProducts = new ArrayList<>();
+        // Gọi hàm đệ quy để lấy sản phẩm của danh mục cha và danh mục con
+        getAllProductsFromCategoryAndChildren(category, allProducts);
+        return allProducts.stream()
+                .map(productMapper::mapModelToResponse)
+                .toList();
+    }
+    private void getAllProductsFromCategoryAndChildren(Category category, List<Product> productList) {
+        // Thêm tất cả sản phẩm của danh mục hiện tại vào danh sách sản phẩm
+        productList.addAll(category.getProducts());
+        // Lấy danh sách danh mục con
+        List<Category> childCategories = category.getChildCategories();
+        // Đệ quy qua danh sách danh mục con để lấy sản phẩm của chúng
+        for (Category childCategory : childCategories) {
+            getAllProductsFromCategoryAndChildren(childCategory, productList);
+        }
+    }
+    private String removeAccentsAndToUpper(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String withoutAccents = normalized.replaceAll("[^\\p{ASCII}]", "");
+        return withoutAccents.toUpperCase();
+    }
+    private String generateSkuFromProductName(String productName, long lastId) {
+        String[] words = productName.split("\\s+");
+        StringBuilder skuBuilder = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                String cleanedWord = removeAccentsAndToUpper(word);
+                char firstChar = cleanedWord.charAt(0);
+                skuBuilder.append(firstChar);
+            }
+        }
+        skuBuilder.append(lastId + 1);
+        return skuBuilder.toString();
+    }
+
 }

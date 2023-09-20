@@ -1,7 +1,7 @@
 export interface Category {
   banners: Banner;
   categoryParent: null;
-  childCategories: never[];
+  childCategories: Category[];
   createdDate: string;
   description: string;
   id: number;

@@ -138,7 +138,7 @@ const AddEmp = () => {
       </div>
       <div className="p-5">
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Tài khoản</div>
+          <div className="w-[30%] text-black font-bold">Tài khoản :</div>
           <div className="w-[70%] flex items-center">
             <input
               className="w-[100%] rounded-md h-10 pl-2 border-[#737373]"
@@ -148,7 +148,7 @@ const AddEmp = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Mật khẩu</div>
+          <div className="w-[30%] text-black font-bold">Mật khẩu :</div>
           <div className="w-[70%] flex items-center">
             <input
               type="password"
@@ -159,7 +159,7 @@ const AddEmp = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Họ và Tên</div>
+          <div className="w-[30%] text-black font-bold">Họ và Tên :</div>
           <div className="w-[70%] flex items-center justify-between">
             <input
               className="w-[65%] rounded-md h-10 pl-2 border-[#737373]"
@@ -174,7 +174,7 @@ const AddEmp = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Email</div>
+          <div className="w-[30%] text-black font-bold">Email :</div>
           <div className="w-[70%] flex items-center">
             <input
               className="w-[100%] rounded-md h-10 pl-2 border-[#737373]"
@@ -184,7 +184,7 @@ const AddEmp = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Số điện thoại</div>
+          <div className="w-[30%] text-black font-bold">Số điện thoại :</div>
           <div className="w-[70%] flex items-center">
             <input
               className="w-[100%] rounded-md h-10 pl-2 border-[#737373]"
@@ -198,7 +198,7 @@ const AddEmp = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={() => AddEmp()}
           >
-            <span>Tạo mới</span>
+            <span className="text-black font-bold">Tạo mới</span>
           </div>
         </div>
       </div>

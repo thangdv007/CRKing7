@@ -17,6 +17,8 @@ import DetailProduct from '../detailProduct';
 import SearchProduct from '../searchProduct';
 import DetailArticle from '../detailArticle';
 import DetailOrder from '../profile/detailOrder';
+import Contact from '../contact';
+import Articles from '../articles';
 
 const Layout = () => {
   const ScrollToTopOnNavigate = () => {
@@ -77,6 +79,8 @@ const Layout = () => {
           <Route path={path.searchProduct} element={<SearchProduct />} />
           <Route path={path.detailArticle} element={<DetailArticle />} />
           <Route path={path.detailOrder} element={<DetailOrder />} />
+          <Route path={path.contact} element={<Contact />} />
+          <Route path={path.article} element={<Articles />} />
         </Routes>
       </div>
       <Footer />

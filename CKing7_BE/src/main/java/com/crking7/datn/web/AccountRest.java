@@ -4,6 +4,7 @@ import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.models.User;
 import com.crking7.datn.web.dto.request.*;
 import com.crking7.datn.web.dto.response.LoginResponse;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import com.crking7.datn.web.dto.response.UserResponse;
 import com.crking7.datn.securities.JwtConfig;
 import com.crking7.datn.services.UserService;
@@ -89,10 +90,12 @@ public class AccountRest {
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         try {
             Object userResponse = userService.registerUser(registerRequest);
-            if (userResponse != null) {
-                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponse), HttpStatus.OK);
+            if (userResponse instanceof String) {
+                String errorMessage = (String) userResponse;
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", errorMessage), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Đăng kí không thành công"), HttpStatus.OK);
+                UserResponse userResponses = (UserResponse) userResponse;
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userResponses), HttpStatus.OK);
             }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -117,7 +120,12 @@ public class AccountRest {
     @PutMapping("/generate-otp")
     public ResponseEntity<?> regenerateOtp(@RequestBody RegisterRequest registerRequest) {
         try {
-            return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", userService.generateOtp(registerRequest)), HttpStatus.OK);
+            String s = userService.generateOtp(registerRequest);
+            if(s == null ){
+                return new ResponseEntity<>(ApiResponse.build(201, false, "Thất bại", "Email đã được sử dụng"), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công", s), HttpStatus.OK);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

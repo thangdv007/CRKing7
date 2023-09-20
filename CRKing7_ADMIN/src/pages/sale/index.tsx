@@ -9,6 +9,7 @@ import path from '~/constants/path';
 import SpinLoading from '~/components/loading/spinLoading';
 import Modal from 'react-modal';
 import { Sale } from '~/types/sale.type';
+import Pagination from '~/components/paginationItems';
 
 const customStyles = {
   content: {
@@ -20,19 +21,55 @@ const customStyles = {
     transform: 'translate(-50%, -50%)',
   },
 };
+interface Params {
+  keyword: string;
+  pageNo: number;
+  sortBy: string;
+  sortDirection: string;
+  isActive?: number | undefined;
+}
 
 const Sale = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
-  const [page, setPage] = React.useState(0);
-  const [lastPage, setLastPage] = React.useState(0);
+  const [page, setPage] = React.useState(1);
   const [keyword, setKeyword] = React.useState('');
+  const [isActive, setIsActive] = React.useState<number>(-1);
+  const [sortBy, setSortBy] = React.useState('id');
+  const [totalPage, setTotalPage] = React.useState(1);
+  const [sortDirection, setSortDirection] = React.useState();
   const navigate = useNavigate();
   const [loadding, setLoading] = React.useState(false);
   const [sale, setSale] = React.useState<Sale[]>([]);
-
   const [isOpen, setIsOpen] = React.useState(false);
   const [saleId, setSaleId] = React.useState<number>();
+  const [chooseFilter, setChooseFilter] = React.useState(null);
+  const [showFilter, setShowFilter] = React.useState(false);
+  const showFilterRef = React.useRef(null);
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (showFilterRef.current && !showFilterRef.current.contains(event.target)) {
+        // Nếu sự kiện click xảy ra bên ngoài div, đóng dropdown
+        setShowFilter(false);
+      }
+    }
+    // Đăng ký sự kiện click trên document
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      // Hủy đăng ký sự kiện khi component unmount
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+  const filterOptions = [
+    { id: -1, title: 'Tất Cả' },
+    { id: 1, title: 'Hoạt Động' },
+    { id: 0, title: 'Đã Khóa' },
+  ];
+  const handleChooseFilter = (item) => {
+    setIsActive(item.id);
+    setChooseFilter(item.id);
+    setShowFilter(false);
+  };
 
   const openModal = (id: number) => {
     setSaleId(id);
@@ -46,9 +83,16 @@ const Sale = () => {
     if (!!token) {
       try {
         setLoading(true);
-        const currentPage = 0;
-        setPage(currentPage);
-        const url = Api.getAllSaleByKeyWord(currentPage, keyword);
+        const params: Params = {
+          keyword: keyword,
+          pageNo: page,
+          sortBy: sortBy,
+          sortDirection: sortDirection || 'desc',
+        };
+        if (isActive !== -1) {
+          params.isActive = isActive;
+        }
+        const url = Api.getAllSaleByKeyWord(params);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -65,9 +109,12 @@ const Sale = () => {
             };
           });
           setSale(newData);
+          const totalPages = Math.ceil(res.data.total / res.data.perPage);
+          setTotalPage(totalPages);
+          setPage(res.data.currentPage);
         } else {
-          setLoading(true);
-          toast.error(`${res.data.data}`, {
+          setSale([]);
+          toast.error(`Không có chương trình nào phù hợp`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -84,6 +131,12 @@ const Sale = () => {
   React.useEffect(() => {
     getAllSale();
   }, []);
+  const handlePageClick = (page) => {
+    setPage(page);
+  };
+  React.useEffect(() => {
+    getAllSale();
+  }, [page, sortBy, sortDirection, isActive]);
   const hideSale = async (id: number) => {
     if (!!token) {
       try {
@@ -166,7 +219,7 @@ const Sale = () => {
             theme: 'dark',
           });
         } else {
-          toast.error(`Xóa sản phẩm không thành công`, {
+          toast.error(`Xóa khuyến mãi không thành công`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -198,21 +251,70 @@ const Sale = () => {
             ></i>
           </div>
         </div>
-        <div
-          className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
-          onClick={() => navigate(path.addSale)}
-        >
-          <i className="bx bxs-plus-circle text-2xl text-white"></i>
+        <div className="flex items-center justify-between">
+          <div className="w-10 h-10 rounded-md mr-2 relative bg-blue flex items-center justify-center">
+            <i
+              ref={showFilterRef}
+              className="bx bx-filter text-white text-4xl cursor-pointer"
+              onClick={() => setShowFilter(!showFilter)}
+            ></i>
+            {showFilter && (
+              <ul className="absolute top-[70%] right-0 translate-y-4 transition-transform px-2 w-40 bg-blue rounded-md flex flex-col items-center justify-center">
+                {filterOptions.map((option, i) => (
+                  <React.Fragment key={i}>
+                    <li
+                      className={`py-2 cursor-pointer w-full text-center ${
+                        chooseFilter === option.id ? 'text-black font-semibold' : 'text-white'
+                      }`}
+                      onClick={() => handleChooseFilter(option)}
+                    >
+                      {option.title}
+                    </li>
+                    {option.id !== filterOptions[filterOptions.length - 1].id && (
+                      <div className="w-full bg-white h-[1px]"></div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div
+            className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
+            onClick={() => navigate(path.addSale)}
+          >
+            <i className="bx bxs-plus-circle text-2xl text-white"></i>
+          </div>
         </div>
       </div>
       <div className="w-full h-[2px] bg-black mt-5"></div>
       <div className="overflow-x-auto w-full">
         <table className="table w-full">
-          <thead>
+          <thead className="border-black border-b-[1px]">
             <tr>
-              <th className="w-[5%]">Mã</th>
-              <th className="w-[20%] text-center">Tên khuyến mãi</th>
-              <th className="w-[10%] text-center">Giảm giá</th>
+              <th
+                className="w-[5%]"
+                onClick={() => {
+                  setSortBy('id'), setSortDirection(!sortDirection);
+                }}
+              >
+                Mã <i className="bx bx-sort text-blue text-base"></i>
+              </th>
+              <th
+                className="w-[20%] text-center"
+                onClick={() => {
+                  setSortBy('name'), setSortDirection(!sortDirection);
+                }}
+              >
+                Tên khuyến mãi <i className="bx bx-sort text-blue text-base"></i>
+              </th>
+              <th
+                className="w-[10%] text-center"
+                onClick={() => {
+                  setSortBy('discount'), setSortDirection(!sortDirection);
+                }}
+              >
+                Giảm giá <i className="bx bx-sort text-blue text-base"></i>
+              </th>
               <th className="w-[20%] text-center">Ngày bắt đầu</th>
               <th className="w-[20%] text-center">Ngày kết thúc</th>
               <th className="w-[10%] text-center">Trạng thái</th>
@@ -225,7 +327,7 @@ const Sale = () => {
               !!sale.length &&
               sale.map((item, i) => {
                 return (
-                  <tr key={i} className="cursor-pointer">
+                  <tr key={i} className="cursor-pointer border-black border-b-[1px] last:border-none">
                     <td>{item.id}</td>
                     <td className="text-center">{item.name}</td>
                     <td className="text-center">{item.discount} %</td>
@@ -266,6 +368,8 @@ const Sale = () => {
           </tbody>
         </table>
       </div>
+      <Pagination page={page} totalPage={totalPage} handlePageClick={handlePageClick} />
+
       <Modal isOpen={isOpen} onRequestClose={closeModal} style={customStyles}>
         <div className="w-full flex flex-col items-center justify-center">
           <h2 className="text-red-500">Bạn có chắc chắn muốn xóa danh mục này</h2>

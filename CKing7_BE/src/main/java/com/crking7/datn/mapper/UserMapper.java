@@ -1,5 +1,6 @@
 package com.crking7.datn.mapper;
 
+import com.crking7.datn.models.dtos.TopUserDto;
 import com.crking7.datn.web.dto.request.AddEmpRequest;
 import com.crking7.datn.web.dto.request.RegisterRequest;
 import com.crking7.datn.web.dto.request.UserRequest;
@@ -27,4 +28,5 @@ public interface UserMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateModel(@MappingTarget User user, UserRequest userRequest);
+
 }

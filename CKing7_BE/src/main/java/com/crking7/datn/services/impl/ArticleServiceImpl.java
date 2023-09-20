@@ -9,11 +9,13 @@ import com.crking7.datn.services.ArticleService;
 import com.crking7.datn.web.dto.request.*;
 import com.crking7.datn.web.dto.response.ArticleResponse;
 import com.crking7.datn.mapper.ArticleMapper;
+import com.crking7.datn.web.dto.response.OrdersResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,15 +60,17 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<ArticleResponse> getArticles(int pageNo, int pageSize, String sortBy) {
+    public Pair<List<ArticleResponse>, Integer> getArticles(int pageNo, int pageSize, String sortBy) {
         if (pageNo < 1) {
             pageNo = 1;
         }
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Article> articles = articleRepository.findAllByStatus(pageable, Constants.ACTIVE_STATUS);
-        return articles.getContent().stream()
+        int total = (int) articles.getTotalElements();
+        List<ArticleResponse> articleResponses = articles.getContent().stream()
                 .map(articleMapper::mapToResponse)
                 .toList();
+        return Pair.of(articleResponses, total);
     }
 
     @Override
@@ -78,15 +82,18 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<ArticleResponse> getAllArticles(String keyword, int pageNo, int pageSize, String sortBy) {
+    public Pair<List<ArticleResponse>, Integer> getAllArticles(String keyword,Integer status, int pageNo, int pageSize, String sortBy, boolean desc) {
+        Sort.Direction sortDirection = desc ? Sort.Direction.DESC : Sort.Direction.ASC;
         if (pageNo < 1) {
             pageNo = 1;
         }
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
-        Page<Article> articles = articleRepository.findAllByKeyword(keyword, pageable);
-        return articles.getContent().stream()
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sortDirection, sortBy);
+        Page<Article> articles = articleRepository.findAllByKeyword(keyword,status, pageable);
+        int total = (int) articles.getTotalElements();
+        List<ArticleResponse> articleResponses = articles.getContent().stream()
                 .map(articleMapper::mapToResponse)
                 .toList();
+        return Pair.of(articleResponses, total);
     }
 
     @Override
@@ -98,20 +105,18 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public List<ArticleResponse> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId) {
+    public Pair<List<ArticleResponse>, Integer> getArticleByCategory(int pageNo, int pageSize, String sortBy, long categoryId) {
         Category category = categoryRepository.findByStatusAndIdAndType(Constants.ACTIVE_STATUS, categoryId, Constants.ARTICLE_TYPE);
         if (pageNo < 1) {
             pageNo = 1;
         }
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortBy).descending());
         Page<Article> articles = articleRepository.findAllByCategoryAndStatus(pageable, category, Constants.ACTIVE_STATUS);
-        if (!articles.isEmpty()) {
-            return articles.getContent().stream()
-                    .map(articleMapper::mapToResponse)
-                    .toList();
-        } else {
-            return null;
-        }
+        int total = (int) articles.getTotalElements();
+        List<ArticleResponse> articleResponses = articles.getContent().stream()
+                .map(articleMapper::mapToResponse)
+                .toList();
+        return Pair.of(articleResponses, total);
     }
 
     @Override

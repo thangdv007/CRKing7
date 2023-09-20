@@ -110,7 +110,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE (p.sale.id = :saleId) AND " +
             "(:keyword IS NULL OR p.name LIKE %:keyword% OR p.sku LIKE %:keyword%)")
-    List<Product> findBySaleIdAndKeyword(@Param("keyword") String keyword,@Param("saleId") long saleId);
+    List<Product> findBySaleIdAndKeyword(@Param("keyword") String keyword, @Param("saleId") long saleId);
 
     @Query(value = "SELECT * FROM product WHERE status = 1 ORDER BY RAND() LIMIT 10", nativeQuery = true)
     List<Product> getRandomProducts();
@@ -119,16 +119,37 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "JOIN p.colors c " +
             "JOIN c.sizes s " +
             "WHERE p.status = 1 " +
-            "AND (:categoryId IS NULL OR p.productCategory.id = :categoryId OR :categoryId = 0) " +
+            "AND (:categoryId IS NULL OR p.productCategory.id = :categoryId OR :categoryId = 0 OR p.productCategory.parentCategory.id = :categoryId OR " +
+            "p.productCategory.parentCategory.parentCategory.id = :categoryId) " +
             "AND (:valueSize IS NULL OR s.value like %:valueSize% OR :valueSize = '') " +
             "AND (:valueColor IS NULL OR c.value like %:valueColor% OR :valueColor = '') " +
             "AND (:minPrice IS NULL OR p.salePrice >= :minPrice OR :minPrice = 0) " +
-            "AND (:maxPrice IS NULL OR p.salePrice <= :maxPrice OR :maxPrice = 0)")
+            "AND (:maxPrice IS NULL OR p.salePrice <= :maxPrice OR :maxPrice = 0) " +
+            "AND (:saleId IS NULL OR p.sale.id = :saleId OR :saleId = 0)")
     Page<Product> getAllProducts(String valueSize,
                                  String valueColor,
                                  Integer minPrice,
                                  Integer maxPrice,
                                  Long categoryId,
+                                 Long saleId,
                                  Pageable pageable);
 
+    @Query("SELECT DISTINCT p FROM Product p " +
+            "WHERE (:status IS NULL OR p.status = :status) " +
+            "AND (:keyword IS NULL OR p.name LIKE %:keyword% OR p.sku LIKE %:keyword%) " +
+            "AND (:categoryId IS NULL OR p.productCategory.id = :categoryId OR :categoryId = 0) " +
+            "AND (:minPrice IS NULL OR p.salePrice >= :minPrice OR :minPrice = 0) " +
+            "AND (:maxPrice IS NULL OR p.salePrice <= :maxPrice OR :maxPrice = 0)")
+    Page<Product> getAllProductsAdmin(String keyword,
+                                      Integer status,
+                                      Integer minPrice,
+                                      Integer maxPrice,
+                                      Long categoryId,
+                                      Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.status = 1")
+    Long totalProducts();
+
+    @Query("SELECT p FROM Product p WHERE p.sale IS NOT NULL ")
+    List<Product> findBySale();
 }

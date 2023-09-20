@@ -15,6 +15,10 @@ public interface BannerRepository extends JpaRepository<Banner, Long> {
 
     Banner findByName(String name);
 
-    @Query("SELECT b FROM Banner b WHERE (:keyword IS NULL OR b.name LIKE %:keyword%)")
-    Page<Banner> findAllBanners(@Param("keyword") String keyword, Pageable pageable);
+    @Query("SELECT b FROM Banner b WHERE (:keyword IS NULL OR b.name LIKE %:keyword%) " +
+            "AND (:status IS NULL OR b.status = :status)"
+    )
+    Page<Banner> findAllBanners(@Param("keyword") String keyword,
+                                @Param("status") Integer status,
+                                Pageable pageable);
 }

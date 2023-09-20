@@ -113,7 +113,7 @@ const EditProfile = () => {
       </div>
       <div className="p-5">
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Họ</div>
+          <div className="w-[30%] text-base text-black font-bold">Họ : </div>
           <div className="w-[70%] flex items-center">
             <input
               ref={lastNameRef}
@@ -126,7 +126,7 @@ const EditProfile = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Tên</div>
+          <div className="w-[30%] text-base text-black font-bold">Tên : </div>
           <div className="w-[70%] flex items-center">
             <input
               ref={firstNameRef}
@@ -142,7 +142,7 @@ const EditProfile = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Email</div>
+          <div className="w-[30%] text-base text-black font-bold">Email : </div>
           <div className="w-[70%] flex items-center">
             <input
               ref={emailRef}
@@ -155,7 +155,7 @@ const EditProfile = () => {
           </div>
         </div>
         <div className="flex items-center justify-around mt-3">
-          <div className="w-[30%]">Số điện thoại</div>
+          <div className="w-[30%] text-base text-black font-bold">Số điện thoại : </div>
           <div className="w-[70%] flex items-center">
             <input
               ref={phoneRef}
@@ -172,7 +172,7 @@ const EditProfile = () => {
             className="w-[30%] flex justify-center items-center bg-blue rounded-md h-10 cursor-pointer"
             onClick={updateProfile}
           >
-            <span>Cập nhật</span>
+            <span className="text-base text-black font-bold">Cập nhật</span>
           </div>
         </div>
       </div>

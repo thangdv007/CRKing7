@@ -48,7 +48,7 @@ const AddArticle = () => {
           }),
         ]);
         if (res.status) {
-          setCategory(res.data.data);
+          setCategory(res.data);
         } else {
           toast.error(`Có lỗi xảy ra`, {
             position: 'top-right',
@@ -59,12 +59,6 @@ const AddArticle = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   React.useEffect(() => {

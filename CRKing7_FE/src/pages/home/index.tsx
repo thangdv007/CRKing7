@@ -23,15 +23,14 @@ import { formatDateString } from '~/constants/formatDate';
 import path from '~/constants/path';
 
 SwiperCore.use([Navigation]);
-
 const Home = () => {
   const navigate = useNavigate();
   const [slide, setSlide] = React.useState<Banner[]>([]);
-  const [category, setCategory] = React.useState<Category[]>([]);
   const [productBestSeller, setProductBestSeller] = React.useState<Product[]>([]);
   //PBS === productBestSeller
   const [sales, setSales] = React.useState<Sale[]>([]);
   const [salesColection, setSalesColection] = React.useState<Sale[]>([]);
+  const [salesProduct, setSalesProduct] = React.useState<Sale[]>([]);
 
   const getSlideHome = async () => {
     try {
@@ -51,6 +50,30 @@ const Home = () => {
   };
   React.useEffect(() => {
     getSlideHome();
+  }, []);
+  //getcategory
+  const [category1, setCategory1] = React.useState<Category[]>([]);
+  const [category2, setCategory2] = React.useState<Category[]>([]);
+  const getCategory = async (id: number) => {
+    try {
+      const res = await categoryApi.getCategoryParent(id);
+      if (res.data.status) {
+        const category = res.data.data;
+        if (id === 28) {
+          setCategory1(category);
+        } else if (id === 29) {
+          setCategory2(category);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const category: Category[] = [...category1, ...category2];
+
+  React.useEffect(() => {
+    getCategory(28);
+    getCategory(29);
   }, []);
   // swiper
   const [activeSlide, setActiveSlide] = React.useState(0);
@@ -77,26 +100,6 @@ const Home = () => {
     }
   };
 
-  //getcategory
-  const getCategoryHome = async (id: number) => {
-    try {
-      const res = await categoryApi.getCategoryParent(id);
-      if (res.data.status) {
-        setCategory(res.data.data);
-      } else {
-        toast.error(`${res.data.data}`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  React.useEffect(() => {
-    getCategoryHome(1);
-  }, []);
   //getProductBestSeller
   const getProBestSeller = async () => {
     try {
@@ -131,6 +134,10 @@ const Home = () => {
           ...prevMapping,
           [sale.id]: sale.discount,
         }));
+        setSalesProduct((prevMapping) => ({
+          ...prevMapping,
+          [sale.id]: sale.discount,
+        }));
       } else {
         toast.error(`${res.data.data}`, {
           position: 'top-right',
@@ -151,35 +158,41 @@ const Home = () => {
       });
     }
   }, [productBestSeller]);
-
+  //productColection
   const [activeTab, setActiveTab] = React.useState<number | null>();
+  const [activeCategoryId, setActiveCategoryId] = React.useState<number | null>(null);
   React.useEffect(() => {
     if (category.length > 0) {
-      setActiveTab(category[0]?.id || null);
+      if (activeCategoryId === null || !category.find((item) => item.id === activeCategoryId)) {
+        setActiveCategoryId(category[0].id);
+      }
     }
   }, [category]);
+
+  React.useEffect(() => {
+    if (activeCategoryId !== null) {
+      setActiveTab(activeCategoryId);
+    }
+  }, [activeCategoryId]);
+
   const handleTabClick = (tabIndex) => {
-    setActiveTab(tabIndex);
+    setActiveCategoryId(tabIndex);
   };
   const [productColection, setProductColection] = React.useState<Product[]>([]);
   const getProduct = async (id: number) => {
     try {
       const res = await productApi.getProductByCategory(id);
       if (res.data.status) {
-        setProductColection(res.data.data.data);
+        setProductColection(res.data.data);
       } else {
-        toast.error(`${res.data.data}`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
+        setProductColection([]);
       }
     } catch (error) {
       console.error(error);
     }
   };
   React.useEffect(() => {
-    if (activeTab !== null) {
+    if (!!activeTab) {
       getProduct(activeTab);
     }
   }, [activeTab]);
@@ -195,7 +208,8 @@ const Home = () => {
   //article
   const [activeSlideArticle, setActiveSlideArticle] = React.useState(0);
   const [swiperArticle, setSwiperArticle] = React.useState(null);
-  const totalSlidesArticle = category.length;
+  const [article, setArticle] = React.useState<Article[]>([]);
+  const totalSlidesArticle = article.length;
   const setSwiperRefArticle = (ref) => {
     setSwiperArticle(ref);
   };
@@ -215,7 +229,6 @@ const Home = () => {
       }
     }
   };
-  const [article, setArticle] = React.useState<Article[]>([]);
   const getArticle = async () => {
     try {
       const res = await articleApi.getArticleHome();
@@ -235,6 +248,91 @@ const Home = () => {
   React.useEffect(() => {
     getArticle();
   }, []);
+  //đếm ngược
+  const [countdown, setCountdown] = React.useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  let countdownInterval;
+  React.useEffect(() => {
+    const targetDate = new Date('2023-12-24T10:00:00').getTime();
+    const calculateCountdown = () => {
+      const now = new Date().getTime();
+      const timeDifference = targetDate - now;
+
+      if (timeDifference <= 0) {
+        // Countdown has ended
+        clearInterval(countdownInterval);
+        setCountdown({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        });
+      } else {
+        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        setCountdown({ days, hours, minutes, seconds });
+      }
+    };
+
+    countdownInterval = setInterval(calculateCountdown, 1000);
+
+    return () => {
+      clearInterval(countdownInterval);
+    };
+  }, []);
+  //sản phẩm khuyến mãi
+  const [activeSlideSale, setActiveSlideSale] = React.useState(0);
+  const [swiperSale, setSwiperSale] = React.useState(null);
+  const [productSale, setProductSale] = React.useState<Product[]>([]);
+  const totalSlidesSale = productSale.length;
+  const setSwiperRefSale = (ref) => {
+    setSwiperSale(ref);
+  };
+  const handlePrevClickSale = () => {
+    if (activeSlideSale > 0) {
+      if (swiperSale && activeSlideSale - 1 >= 0) {
+        setActiveSlideSale(activeSlideSale - 1);
+        swiperSale.slidePrev();
+      }
+    }
+  };
+  const handleNextClickSale = () => {
+    if (activeSlideSale < totalSlidesSale - 1) {
+      if (swiperSale && activeSlideSale + 1 < totalSlidesSale - 3) {
+        setActiveSlideSale(activeSlideSale + 1);
+        swiperSale.slideNext();
+      }
+    }
+  };
+  const getProductSale = async () => {
+    try {
+      const res = await productApi.productSale();
+      if (res.data.status) {
+        setProductSale(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  React.useEffect(() => {
+    getProductSale();
+  }, []);
+  React.useEffect(() => {
+    if (productSale.length > 0) {
+      productSale.forEach(async (item) => {
+        if (item.sale != null && item.sale !== 0) {
+          await getSale(item.sale);
+        }
+      });
+    }
+  }, [productSale]);
   return (
     <>
       {/* banner */}
@@ -350,7 +448,10 @@ const Home = () => {
                 !!category.length &&
                 category.map((item, i) => (
                   <SwiperSlide key={i} className="category-item">
-                    <div className="category-item__inner" onClick={() => navigate(path.product, { state: item.id })}>
+                    <div
+                      className="category-item__inner"
+                      onClick={() => navigate(path.product, { state: { categoryId: item.id } })}
+                    >
                       <div className="category-item__img boxlazy-img">
                         <div className="cursor-pointer">
                           <img className="swiper-lazy swiper-lazy-loaded" src={`${API_URL_IMAGE}${item.urlImage}`} />
@@ -382,6 +483,161 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {/* sản phẩm khuyến mãi */}
+      <section className="section-home-collection collection-flashsale">
+        <div className="container">
+          <div className="section-title">
+            <h2 className="text-start">
+              <a className="cursor-pointer" onClick={() => navigate(path.product)}>
+                Sản phẩm khuyến mãi
+              </a>
+            </h2>
+            {/* đếm ngược  */}
+            <div className="section-countdown flip-js-countdown countdown-show">
+              <div
+                className="auto-due soon"
+                data-face="slot"
+                data-format="d,h,m,s"
+                data-labels-days="Dia,Ngày"
+                data-labels-hours="Hora,Giờ"
+                data-labels-minutes="Minuto,Phút"
+                data-labels-seconds="Segundo,Giây"
+                data-initialized="true"
+                data-layout=" group"
+                data-scale="m"
+              >
+                <span id="label-due" />
+                <div id="soon-espa" />
+                <span className="soon-group ">
+                  <span className="soon-group-inner">
+                    <span className="soon-group soon-group-sub">
+                      <span className="soon-group-inner">
+                        <span className="soon-slot-inner">{countdown.days}</span>
+                        <span className="soon-text soon-label">Ngày</span>
+                      </span>
+                    </span>
+                    <span className="soon-group soon-group-sub">
+                      <span className="soon-group-inner">
+                        <span className="soon-slot-inner">{countdown.hours}</span>
+                        <span className="soon-text soon-label">Giờ</span>
+                      </span>
+                    </span>
+                    <span className="soon-group soon-group-sub">
+                      <span className="soon-group-inner">
+                        <span className="soon-slot-inner">{countdown.minutes}</span>
+                        <span className="soon-text soon-label">Phút</span>
+                      </span>
+                    </span>
+                    <span className="soon-group soon-group-sub">
+                      <span className="soon-group-inner">
+                        <span className="soon-slot-inner">{countdown.seconds}</span>
+                        <span className="soon-text soon-label">Giây</span>
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              </div>
+            </div>
+            <div className="swiper-nav">
+              <span
+                className={`swiper-button swiper-category-prev ${
+                  activeSlideSale === 0 ? 'swiper-button-disabled' : ''
+                }`}
+                role="button"
+                tabIndex={-1}
+                onClick={handlePrevClickSale}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width={22} height={22} viewBox="0 0 511.993 511.993">
+                  <g>
+                    <g>
+                      <g>
+                        <path d="M487.292,235.408H20.59c-11.372,0-20.59,9.224-20.59,20.59c0,11.366,9.217,20.59,20.59,20.59h466.702 c11.372,0,20.59-9.217,20.59-20.59C507.882,244.625,498.665,235.408,487.292,235.408z" />
+                      </g>
+                    </g>
+                    <g>
+                      <g>
+                        <path d="M505.96,241.434L304.187,39.653c-8.044-8.037-21.07-8.037-29.114,0c-8.044,8.044-8.044,21.084,0,29.121l187.216,187.223 L275.073,443.221c-8.044,8.037-8.044,21.077,0,29.114c4.022,4.022,9.286,6.033,14.557,6.033s10.535-2.011,14.557-6.033	l201.773-201.78C514.004,262.511,514.004,249.47,505.96,241.434z" />
+                      </g>
+                    </g>
+                  </g>
+                </svg>
+              </span>
+              <span
+                className={`swiper-button swiper-category-next ${
+                  activeSlideSale >= totalSlidesSale - 6 ? 'swiper-button-disabled' : ''
+                }`}
+                role="button"
+                tabIndex={0}
+                onClick={handleNextClickSale}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width={22} height={22} viewBox="0 0 511.993 511.993">
+                  <g>
+                    <g>
+                      <g>
+                        <path d="M487.292,235.408H20.59c-11.372,0-20.59,9.224-20.59,20.59c0,11.366,9.217,20.59,20.59,20.59h466.702 c11.372,0,20.59-9.217,20.59-20.59C507.882,244.625,498.665,235.408,487.292,235.408z" />
+                      </g>
+                    </g>
+                    <g>
+                      <g>
+                        <path d="M505.96,241.434L304.187,39.653c-8.044-8.037-21.07-8.037-29.114,0c-8.044,8.044-8.044,21.084,0,29.121l187.216,187.223 L275.073,443.221c-8.044,8.037-8.044,21.077,0,29.114c4.022,4.022,9.286,6.033,14.557,6.033s10.535-2.011,14.557-6.033	l201.773-201.78C514.004,262.511,514.004,249.47,505.96,241.434z" />
+                      </g>
+                    </g>
+                  </g>
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div className="section-content">
+            <Swiper
+              onSwiper={setSwiperRefSale}
+              slidesPerView={4}
+              breakpoints={{
+                0: {
+                  slidesPerView: 2,
+                  spaceBetween: 30,
+                },
+                760: {
+                  slidesPerView: 2,
+                  spaceBetween: 30,
+                },
+                990: {
+                  slidesPerView: 4,
+                  spaceBetween: 30,
+                },
+                1200: {
+                  slidesPerView: 6,
+                  spaceBetween: 30,
+                },
+              }}
+              spaceBetween={30}
+              modules={[Navigation]}
+              className="list-product-slide"
+            >
+              {!!productSale &&
+                !!productSale.length &&
+                productSale.map((item, i) => (
+                  <SwiperSlide key={i} className="">
+                    <ItemProduct
+                      id={item.id}
+                      name={item.name}
+                      price={item.price}
+                      salePrice={item.salePrice}
+                      img1={item.images[0].url}
+                      img2={item.images[1].url}
+                      sale={`${salesProduct[item.sale]}`}
+                      slide={true}
+                    />
+                  </SwiperSlide>
+                ))}
+            </Swiper>
+            <div className="see-more-product d-flex" onClick={() => navigate(path.product, { state: { saleId: 1 } })}>
+              <a className="button btnlight btn-see-more cursor-pointer">
+                Xem tất cả <strong>Sản phẩm khuyến mãi</strong>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* sản phẩm nổi bật */}
       <div className="section-home-collection collection-1-tabs collection-tabs">
         <div className="container">
@@ -389,7 +645,9 @@ const Home = () => {
             <div className="title-tabs__navigation">
               <ul className="nav tabs-navigation">
                 <li className="nav-item tab-header">
-                  <a className="tab-title nav-link active">SẢN PHẨM NỔI BẬT</a>
+                  <a className="tab-title nav-link active" onClick={() => navigate(path.product)}>
+                    SẢN PHẨM NỔI BẬT
+                  </a>
                 </li>
               </ul>
             </div>
@@ -412,7 +670,7 @@ const Home = () => {
                 </React.Fragment>
               ))}
           </div>
-          <div className="see-more-product d-flex ">
+          <div className="see-more-product d-flex " onClick={() => navigate(path.product)}>
             <a className="button btnlight btn-see-more cursor-pointer">
               Xem tất cả <strong className="coll-title">SẢN PHẨM NỔI BẬT</strong>
             </a>
@@ -420,12 +678,12 @@ const Home = () => {
         </div>
       </div>
       {/* home about us */}
-      <div id="home-aboutUs" className="animation-eva">
+      {/* <div id="home-aboutUs" className="animation-eva">
         <div className="innerHomeAboutUs">
           <div className="padding-lr-0 col-12 col-sm-7">
             <div className="leftAboutUs site-animation">
               <div className="imageAboutUs">
-                <Link to="https://evadeeva.com.vn/collections/hang-moi-ve" title="𝐔𝐑𝐁𝐀𝐍𝐈𝐓𝐘 | 𝐍𝐄𝐖 𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍">
+                <Link  title="𝐔𝐑𝐁𝐀𝐍𝐈𝐓𝐘 | 𝐍𝐄𝐖 𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍">
                   <img
                     src="https://file.hstatic.net/200000000133/file/1000x600-min_0f26080a01954a0b9483c997aea6d7cf.jpg"
                     alt="𝐔𝐑𝐁𝐀𝐍𝐈𝐓𝐘 | 𝐍𝐄𝐖 𝐂𝐎𝐋𝐋𝐄𝐂𝐓𝐈𝐎𝐍"
@@ -464,7 +722,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* sản phẩm collection */}
       <div className="section-home-collection collection-1-tabs collection-tabs">
         <div className="container">
@@ -490,26 +748,36 @@ const Home = () => {
             <div className="list-product-row row">
               {!!productColection &&
                 !!productColection.length &&
-                productColection.map((item) => (
-                  <React.Fragment key={`product-${item.id}`}>
-                    <ItemProduct
-                      id={item.id}
-                      name={item.name}
-                      price={item.price}
-                      salePrice={item.salePrice}
-                      img1={item.images[0].url}
-                      img2={item.images[1].url}
-                      sale={`${salesColection[item.sale]}`}
-                      slide={false}
-                    />
-                  </React.Fragment>
-                ))}
+                productColection.map((item, i) => {
+                  if (i > 10) {
+                    return;
+                  }
+                  return (
+                    <React.Fragment key={`product-${item.id}`}>
+                      <ItemProduct
+                        id={item.id}
+                        name={item.name}
+                        price={item.price}
+                        salePrice={item.salePrice}
+                        img1={item.images[0].url}
+                        img2={item.images[1].url}
+                        sale={`${salesColection[item.sale]}`}
+                        slide={false}
+                      />
+                    </React.Fragment>
+                  );
+                })}
             </div>
-            <div className="see-more-product d-flex">
-              <Link to={'/'} className="button btnlight btn-see-more">
+            <div
+              className="see-more-product d-flex cursor-pointer"
+              onClick={() =>
+                navigate(path.product, { state: { categoryId: category.find((item) => item.id === activeTab)?.id } })
+              }
+            >
+              <a className="button btnlight btn-see-more">
                 Xem tất cả{' '}
                 <strong className="coll-title">{category.find((item) => item.id === activeTab)?.title}</strong>
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -519,7 +787,7 @@ const Home = () => {
         <div className="container">
           <div className="section-title d-flex justify-content-between">
             <h2 className="text-start">
-              <Link to="/blogs/all">Bài viết mới nhất</Link>
+              <Link to={path.article}>Bài viết mới nhất</Link>
             </h2>
             <div className="swiper-nav">
               <span

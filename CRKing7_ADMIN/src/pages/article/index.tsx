@@ -9,8 +9,10 @@ import path from '~/constants/path';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
 import SpinLoading from '~/components/loading/spinLoading';
 import Modal from 'react-modal';
-import { Article, ImagesArticle } from '~/types/article.type';
+import { Article } from '~/types/article.type';
 import { Category } from '~/types/category.type';
+import Pagination from '~/components/paginationItems';
+import LoadingPage from '~/components/loadingPage';
 
 const customStyles = {
   content: {
@@ -22,17 +24,53 @@ const customStyles = {
     transform: 'translate(-50%, -50%)',
   },
 };
-
+interface Params {
+  keyword: string;
+  pageNo: number;
+  sortBy: string;
+  sortDirection: string;
+  status?: number | undefined;
+}
 const Article = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
-  const [page, setPage] = React.useState(0);
-  const [lastPage, setLastPage] = React.useState(0);
+  const [page, setPage] = React.useState(1);
+  const [status, setStatus] = React.useState<number>(-1);
+  const [sortBy, setSortBy] = React.useState('id');
+  const [totalPage, setTotalPage] = React.useState(1);
+  const [sortDirection, setSortDirection] = React.useState();
   const [keyword, setKeyword] = React.useState('');
   const navigate = useNavigate();
   const [categoriesMapping, setCategoriesMapping] = React.useState({});
   const [userMapping, setUserMapping] = React.useState({});
   const [loadding, setLoading] = React.useState(false);
+  const [chooseFilter, setChooseFilter] = React.useState(null);
+  const [showFilter, setShowFilter] = React.useState(false);
+  const showFilterRef = React.useRef(null);
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (showFilterRef.current && !showFilterRef.current.contains(event.target)) {
+        // Nếu sự kiện click xảy ra bên ngoài div, đóng dropdown
+        setShowFilter(false);
+      }
+    }
+    // Đăng ký sự kiện click trên document
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      // Hủy đăng ký sự kiện khi component unmount
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+  const filterOptions = [
+    { id: -1, title: 'Tất Cả' },
+    { id: 1, title: 'Hoạt Động' },
+    { id: 0, title: 'Đã Khóa' },
+  ];
+  const handleChooseFilter = (item) => {
+    setStatus(item.id);
+    setChooseFilter(item.id);
+    setShowFilter(false);
+  };
 
   const [article, setArticle] = React.useState<Article[]>([]);
 
@@ -51,9 +89,16 @@ const Article = () => {
     if (!!token) {
       try {
         setLoading(true);
-        const currentPage = 0;
-        setPage(currentPage);
-        const url = Api.getAllArticle(currentPage, keyword);
+        const params: Params = {
+          keyword: keyword,
+          pageNo: page,
+          sortBy: sortBy,
+          sortDirection: sortDirection || 'desc',
+        };
+        if (status !== -1) {
+          params.status = status;
+        }
+        const url = Api.getAllArticle(params);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -69,9 +114,13 @@ const Article = () => {
             };
           });
           setArticle(newData);
+          const totalPages = Math.ceil(res.data.total / res.data.perPage);
+          setTotalPage(totalPages);
+          setPage(res.data.currentPage);
         } else {
           setLoading(true);
-          toast.error(`${res.data.data}`, {
+          setArticle([]);
+          toast.error(`Không có bài viết nào phù hợp`, {
             position: 'top-right',
             pauseOnHover: false,
             theme: 'dark',
@@ -88,6 +137,12 @@ const Article = () => {
   React.useEffect(() => {
     getAllArticle();
   }, []);
+  const handlePageClick = (page) => {
+    setPage(page);
+  };
+  React.useEffect(() => {
+    getAllArticle();
+  }, [page, status, sortBy, sortDirection]);
   const getCategory = async (id: number) => {
     if (!!token) {
       try {
@@ -254,12 +309,6 @@ const Article = () => {
       } catch (error) {
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
 
@@ -283,11 +332,39 @@ const Article = () => {
             ></i>
           </div>
         </div>
-        <div
-          className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
-          onClick={() => navigate(path.addArticle)}
-        >
-          <i className="bx bxs-plus-circle text-2xl text-white"></i>
+        <div className="flex items-center justify-between">
+          <div className="w-10 h-10 rounded-md mr-2 relative bg-blue flex items-center justify-center">
+            <i
+              ref={showFilterRef}
+              className="bx bx-filter text-white text-4xl cursor-pointer"
+              onClick={() => setShowFilter(!showFilter)}
+            ></i>
+            {showFilter && (
+              <ul className="absolute top-[70%] right-0 translate-y-4 transition-transform px-2 w-40 bg-blue rounded-md flex flex-col items-center justify-center">
+                {filterOptions.map((option, i) => (
+                  <React.Fragment key={i}>
+                    <li
+                      className={`py-2 cursor-pointer w-full text-center ${
+                        chooseFilter === option.id ? 'text-black font-semibold' : 'text-white'
+                      }`}
+                      onClick={() => handleChooseFilter(option)}
+                    >
+                      {option.title}
+                    </li>
+                    {option.id !== filterOptions[filterOptions.length - 1].id && (
+                      <div className="w-full bg-white h-[1px]"></div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div
+            className="w-auto px-2 py-1 cursor-pointer flex justify-center items-center bg-blue rounded-md"
+            onClick={() => navigate(path.addArticle)}
+          >
+            <i className="bx bxs-plus-circle text-2xl text-white"></i>
+          </div>
         </div>
       </div>
       <div className="w-full h-[2px] bg-black mt-5"></div>
@@ -295,10 +372,38 @@ const Article = () => {
         <table className="table w-full">
           <thead>
             <tr>
-              <th className="w-[5%] text-center">id</th>
-              <th className="w-[20%] text-center">Tiêu đề</th>
-              <th className="w-[20%] text-center">Mô tả ngắn</th>
-              <th className="w-[10%] text-center">Tác giả</th>
+              <th
+                className="w-[5%] text-center"
+                onClick={() => {
+                  setSortBy('id'), setSortDirection(!sortDirection);
+                }}
+              >
+                Id <i className="bx bx-sort text-blue text-xl"></i>
+              </th>
+              <th
+                className="w-[20%] text-center"
+                onClick={() => {
+                  setSortBy('title'), setSortDirection(!sortDirection);
+                }}
+              >
+                Tiêu đề <i className="bx bx-sort text-blue text-xl"></i>
+              </th>
+              <th
+                className="w-[20%] text-center"
+                onClick={() => {
+                  setSortBy('shortContent'), setSortDirection(!sortDirection);
+                }}
+              >
+                Mô tả ngắn <i className="bx bx-sort text-blue text-xl"></i>
+              </th>
+              <th
+                className="w-[10%] text-center"
+                onClick={() => {
+                  setSortBy('author'), setSortDirection(!sortDirection);
+                }}
+              >
+                Tác giả <i className="bx bx-sort text-blue text-xl"></i>
+              </th>
               <th className="w-[10%] text-center">Người tạo</th>
               <th className="w-[10%] text-center">Danh mục</th>
               <th className="w-[10%] text-center">Trạng thái</th>
@@ -359,6 +464,7 @@ const Article = () => {
           </tbody>
         </table>
       </div>
+      <Pagination page={page} totalPage={totalPage} handlePageClick={handlePageClick} />
       <Modal isOpen={isOpen} onRequestClose={closeModal} style={customStyles}>
         <div className="w-full flex flex-col items-center justify-center">
           <h2 className="text-red-500">Bạn có chắc chắn muốn xóa sản phẩm này</h2>
@@ -381,7 +487,7 @@ const Article = () => {
           </div>
         </div>
       </Modal>
-      {loadding && <SpinLoading />}
+      {loadding && <LoadingPage />}
     </div>
   );
 };

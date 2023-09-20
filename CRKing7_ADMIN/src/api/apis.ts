@@ -2,15 +2,16 @@ import { API_URL } from "~/constants/utils";
 
 const Api = {
   //user
-  getListUser : (page) => API_URL + `/api/admin/user?page=${page}`,
+  getListUser : (params) => API_URL + `/api/admin/user?${new URLSearchParams (params)}`,
   hideUser: (userId, id) => API_URL + `/api/admin/user/hide?userId=${userId}&id=${id}`,
   showUser: (userId, id) => API_URL + `/api/admin/user/show?userId=${userId}&id=${id}`,
   addEmp: () => API_URL + `/api/admin/user/addEmp`,
   detailAcc: (id) => API_URL + `/api/user/${id}`,
   updateUser: (id) => API_URL +`/api/user/update/${id}`,
   changePassword: (id) => API_URL + `/api/user/changePassword/${id}`,
+  allUser: () => API_URL + `/api/admin/allUser`,
   //product
-  getAllProduct: (page, keyword) => API_URL + `/api/admin/product?page=${page}&keyword=${keyword}`,
+  getAllProduct: (params) => API_URL + `/api/admin/product?${new URLSearchParams (params)}`,
   createProduct : () => API_URL +`/api/admin/product/create`,
   updateProduct : () => API_URL +`/api/admin/product/update`,
   hideProduct : (id) => API_URL +`/api/admin/product/hide/${id}`,
@@ -18,13 +19,17 @@ const Api = {
   deleteProduct : (id) => API_URL +`/api/admin/product/delete/${id}`,
   detailProduct: (id) => API_URL + `/api/admin/product/${id}`,
   getProductSale: (id, keyword) => API_URL + `/api/admin/product/productSale?saleId=${id}&keyword=${keyword}`,
-  getProductNoSale: (page, keyword) => API_URL + `/api/admin/product/productNoSale?page=${page}&keyword=${keyword}`,
+  getProductNoSale: (params) => API_URL + `/api/admin/product/productNoSale?${new URLSearchParams (params)}`,
   addProToSale: (id, productIds) => API_URL + `/api/admin/sale/add-product/${id}?productIds=${productIds}`,
   removeProSale: (id, productIds) => API_URL + `/api/admin/sale/remove-product/${id}?productIds=${productIds}`,
+  //xóa ảnh product
+  deleteProImages: (id) => API_URL +`/api/admin/productImage/delete/${id}`,
+  
   //category
   detailCategory: (id) => API_URL + `/api/category/${id}`,
-  getAllCategory: (page, keyword) => API_URL + `/api/admin/category?page=${page}&keyword=${keyword}`,
-  getAllCategory2: () => API_URL + `/api/admin/category`,
+  getAllCategory: (params) => API_URL + `/api/admin/category?${new URLSearchParams (params)}`,
+  getAllCategory2: () => API_URL + `/api/admin/category/allCategory`,
+  getAllCategoryByParentId: (id) => API_URL + `/api/admin/category/parent?parentId=${id}`,
   hideCategory: (id) => API_URL + `/api/admin/category/hideCategory/${id}`,
   showCategory: (id) => API_URL + `/api/admin/category/showCategory/${id}`,
   deleteCategory: (id) => API_URL + `/api/admin/category/delete/${id}`,
@@ -34,14 +39,14 @@ const Api = {
   //sale
   getSale : (id) => API_URL + `/api/admin/sale/${id}`,
   getAllSale : () => API_URL + `/api/admin/sale`,
-  getAllSaleByKeyWord: (page, keyword) => API_URL + `/api/admin/sale?page=${page}&keyword=${keyword}`,
+  getAllSaleByKeyWord: (params) => API_URL + `/api/admin/sale?${new URLSearchParams (params)}`,
   hideSale: (id) => API_URL + `/api/admin/sale/hide/${id}`,
   showSale: (id) => API_URL + `/api/admin/sale/show/${id}`,
   deleteSale: (id) => API_URL + `/api/admin/sale/delete/${id}`,
   createSale: () => API_URL + `/api/admin/sale/create`,
   updateSale: (id) => API_URL + `/api/admin/sale/update/${id}`,
   //banner
-  getAllBanner: (page, keyword) => API_URL + `/api/admin/banner/allBanner?page=${page}&keyword=${keyword}`,
+  getAllBanner: (params) => API_URL + `/api/admin/banner/allBanner?${new URLSearchParams (params)}`,
   createBanner : () => API_URL +`/api/admin/banner/create`,
   updateBanner : () => API_URL +`/api/admin/banner/update`,
   hideBanner : (id) => API_URL +`/api/admin/banner/hideBanner/${id}`,
@@ -49,7 +54,7 @@ const Api = {
   deleteBanner : (id) => API_URL +`/api/admin/banner/delete/${id}`,
   detailBanner: (id) => API_URL + `/api/admin/banner/${id}`,
   //article
-  getAllArticle: (page, keyword) => API_URL + `/api/admin/article?page=${page}&keyword=${keyword}`,
+  getAllArticle: (params) => API_URL + `/api/admin/article?${new URLSearchParams (params)}`,
   createArticle : () => API_URL +`/api/admin/article/create`,
   updateArticle : (id) => API_URL +`/api/admin/article/update/${id}`,
   hideArticle : (id) => API_URL +`/api/admin/article/hide/${id}`,
@@ -57,7 +62,8 @@ const Api = {
   deleteArticle : (id) => API_URL +`/api/admin/article/delete/${id}`,
   detailArticle: (id) => API_URL + `/api/admin/article/${id}`,
   //order
-  getAllOrders: (page, keyword) => API_URL + `/api/admin/order/allOrder?page=${page}&keyword=${keyword}`,
+  // getAllOrders: (page, keyword) => API_URL + `/api/admin/order/allOrder?page=${page}&keyword=${keyword}`,
+  getAllOrders: (params) => API_URL + `/api/admin/order?${new URLSearchParams(params)}`,
   confirmOrder: () => API_URL + `/api/admin/order/confirm`,
   shippingOrder: () => API_URL + `/api/admin/order/shipping`,
   successOrder: () => API_URL + `/api/admin/order/success`,
@@ -70,6 +76,11 @@ const Api = {
   pushNotification: () => API_URL + `/api/admin/push-notification`,
   //thống kê
   getTotalSoldProduct: () => API_URL +`/api/admin/order/totalSold`,
-  countOrders: () => API_URL + `/api/admin/order/countOrders`,
+  countOrders: (status) => API_URL + `/api/admin/order/countOrders?status=${status}`,
+  totalProduct: () => API_URL + `/api/admin/product/totalProduct`,
+  totalInCome: () => API_URL + `/api/admin/order/totalInCome`,
+  totalOrderNoProcess: () =>  API_URL + `/api/admin/order/totalOrderNoProcess`,
+  findTopUser: () => API_URL + `/api/admin/user/findTopUser`,
+  getOrderByMonth: (status) => API_URL +`/api/admin/order/getOrderByMonth?status=${status}`,
 }
 export default Api;
