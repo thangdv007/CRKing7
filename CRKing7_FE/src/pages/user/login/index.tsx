@@ -20,6 +20,20 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       setLoading(true);
+      if (!username) {
+        toast.error(`Vui lòng nhập tên tài khoản`, {
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        return;
+      }
+      if (!password) {
+        toast.error(`Vui lòng nhập mật khẩu`, {
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        return;
+      }
       const data = {
         username,
         password,

@@ -300,8 +300,6 @@ const AddProduct = () => {
   };
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
-    console.log(selectedCategory);
-
     if (selectedCategory !== '--Chọn danh mục--') {
       setCategoryId(selectedCategory);
     }

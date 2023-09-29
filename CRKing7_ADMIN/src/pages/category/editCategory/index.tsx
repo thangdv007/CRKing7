@@ -201,7 +201,7 @@ const EditCategory = () => {
   return (
     <div className="max-w-5xl mx-auto shadow-md border rounded-lg">
       <div className="flex items-center justify-center pt-3">
-        <span className="font-bold text-xl uppercase">Thêm mới danh mục</span>
+        <span className="font-bold text-xl uppercase">Sửa danh mục</span>
       </div>
       <div className="p-5">
         <div className="flex items-center justify-around mt-3">

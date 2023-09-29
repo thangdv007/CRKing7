@@ -37,6 +37,9 @@ const LeftPage = () => {
               <li>
                 <Link to={path.address}>Danh sách địa chỉ</Link>
               </li>
+              <li>
+                <Link to={path.address}>Đổi mật khẩu</Link>
+              </li>
               <li className="last" onClick={handleLogout}>
                 <Link to={path.login}>Đăng xuất</Link>
               </li>

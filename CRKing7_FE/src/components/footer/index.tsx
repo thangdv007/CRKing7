@@ -116,45 +116,85 @@ const Footer = () => {
                 </div>
               </div>
               <div className="col-xl-3 col-lg-6 col-md-12 col-12 widget-footer">
-                <h2 className="widget-footer__title" onClick={() => setIsOpen2(!isOpen2)}>
-                  Thông tin liên hệ
-                </h2>
-                <div className="widget-footer__content block-collapse" style={ContentStyle2}>
+                <h2 className="widget-footer__title">Thông tin liên hệ</h2>
+                <div className="widget-footer__content block-collapse">
                   <ul className="footerNav-link">
-                    {!!category1 &&
-                      !!category1.length &&
-                      category1.map((item, i) => {
-                        return (
-                          <li className="item" key={i}>
-                            <div onClick={() => navigate(path.detailCategory, { state: item })} title={item.title}>
-                              {item.title}
-                            </div>
-                          </li>
-                        );
-                      })}
+                    <li className="item">
+                      <a href="/pages/gioi-thieu" title="Về chúng tôi">
+                        Về chúng tôi
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/cau-hoi-thuong-gap" title="Câu hỏi thường gặp">
+                        Câu hỏi thường gặp
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/blogs/tin-tuc" title="Sự kiện">
+                        Sự kiện
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/blogs/bai-viet-noi-bat" title="Tin tức">
+                        Tin tức
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/blogs/sao-eva" title="SAO & Eva">
+                        SAO &amp; Eva
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/he-thong-cua-hang" title="Hệ thống Showroom">
+                        Hệ thống Showroom
+                      </a>
+                    </li>
                   </ul>
+                  <div className="footer-shipment">
+                    <div className="shipment-title" />
+                    <ul className="shipment-icon"></ul>
+                  </div>
                 </div>
               </div>
+
               <div className="col-xl-3 col-lg-6 col-md-12 col-12 widget-footer">
-                <h2 className="widget-footer__title" onClick={() => setIsOpen3(!isOpen3)}>
-                  Chính sách bán hàng
-                </h2>
-                <div className="widget-footer__content block-collapse" style={ContentStyle3}>
+                <h2 className="widget-footer__title">Chính sách bán hàng</h2>
+                <div className="widget-footer__content block-collapse">
                   <ul className="footerNav-link">
-                    {!!category2 &&
-                      !!category2.length &&
-                      category2.map((item, i) => {
-                        return (
-                          <li className="item" key={i}>
-                            <div onClick={() => navigate(path.detailCategory, { state: item })} title={item.title}>
-                              {item.title}
-                            </div>
-                          </li>
-                        );
-                      })}
+                    <li className="item">
+                      <a href="/pages/chinh-sach-thanh-toan" title="Chính sách thanh toán">
+                        Chính sách thanh toán
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/chinh-sach-van-chuyen" title="Chính sách vận chuyển">
+                        Chính sách vận chuyển
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/chinh-sach-doi-tra" title="Chính sách đổi trả">
+                        Chính sách đổi trả
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/chinh-sach-bao-mat" title="Chính sách bảo mật">
+                        Chính sách bảo mật
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/chuong-trinh-the-vip" title="Chương trình thẻ VIP">
+                        Chương trình thẻ VIP
+                      </a>
+                    </li>
+                    <li className="item">
+                      <a href="/pages/huong-dan-chon-size" title="Hướng dẫn chọn size">
+                        Hướng dẫn chọn size
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </div>
+
               <div className="col-xl-3 col-lg-6 col-md-12 col-12 widget-footer widget-footer-newsletter">
                 <h2 className="widget-footer__title">Đăng ký nhận tin</h2>
                 <div className="widget-footer__content block-collapse">

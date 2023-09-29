@@ -137,7 +137,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p " +
             "WHERE (:status IS NULL OR p.status = :status) " +
             "AND (:keyword IS NULL OR p.name LIKE %:keyword% OR p.sku LIKE %:keyword%) " +
-            "AND (:categoryId IS NULL OR p.productCategory.id = :categoryId OR :categoryId = 0) " +
+            "AND (:categoryId IS NULL OR p.productCategory.id = :categoryId OR :categoryId = 0 OR p.productCategory.parentCategory.id = :categoryId OR " +
+            "p.productCategory.parentCategory.parentCategory.id = :categoryId) " +
             "AND (:minPrice IS NULL OR p.salePrice >= :minPrice OR :minPrice = 0) " +
             "AND (:maxPrice IS NULL OR p.salePrice <= :maxPrice OR :maxPrice = 0)")
     Page<Product> getAllProductsAdmin(String keyword,

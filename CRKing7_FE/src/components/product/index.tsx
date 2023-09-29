@@ -44,6 +44,7 @@ const ItemProduct = (props: IIProduct) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [product, setProduct] = React.useState<Product>();
   const [colors, setColors] = React.useState<Color[]>([]);
+  const [sizes, setSizes] = React.useState<Size[]>([]);
   const [selectedColorI, setSelectedColorI] = React.useState(0);
   const [selectedColor, setSelectedColor] = React.useState('');
   const [selectedSizeI, setSelectedSizeI] = React.useState(0);
@@ -58,14 +59,19 @@ const ItemProduct = (props: IIProduct) => {
   const handlePlusClick = () => {
     setQuantity(quantity + 1);
   };
-  const allSizes: Size[] = colors.reduce((accumulator, currentColor) => {
-    currentColor.sizes.forEach((size) => {
-      if (!accumulator.some((existingSize) => existingSize.value === size.value)) {
-        accumulator.push(size);
-      }
-    });
-    return accumulator;
-  }, []);
+  React.useEffect(() => {
+    // Lọc các kích thước dựa trên màu sắc được chọn
+    if (selectedColor) {
+      const sizesForSelectedColor = colors.find((item) => item.value === selectedColor)?.sizes || [];
+      const filteredSizes = sizesForSelectedColor.filter((size) => size.total > 0 || size.total === 0);
+      setSizes(filteredSizes);
+    } else {
+      // Nếu không có màu sắc nào được chọn, hiển thị tất cả các kích thước có tổng lớn hơn 0
+      const sizes = colors.flatMap((color) => color.sizes);
+      const filteredSizes = sizes.filter((size) => size.total > 0);
+      setSizes(filteredSizes);
+    }
+  }, [selectedColor, colors]);
   const handleColorChoose = (i) => {
     setSelectedColorI(i);
     setSelectedColor(product?.colors[i]?.value || '');
@@ -78,26 +84,26 @@ const ItemProduct = (props: IIProduct) => {
   //   }
   // }, [isOpen]);
   const handleSizeChoose = (i) => {
-    if (allSizes[i]?.total === 0) {
+    if (sizes[i]?.total === 0) {
       // Nếu size đã hết hàng, không thực hiện gì cả
       return;
     }
     setSelectedSizeI(i);
-    setSelectedSize(allSizes[i]?.value);
+    setSelectedSize(sizes[i]?.value);
   };
   React.useEffect(() => {
-    if (allSizes.length > 0 && isOpen) {
-      if (allSizes[0]?.total === 0) {
-        const nextAvailableSizeIndex = allSizes.findIndex((size, index) => index !== 0 && size.total > 0);
+    if (sizes.length > 0 && isOpen) {
+      if (sizes[0]?.total === 0) {
+        const nextAvailableSizeIndex = sizes.findIndex((size, index) => index !== 0 && size.total > 0);
         if (nextAvailableSizeIndex !== -1) {
           setSelectedSizeI(nextAvailableSizeIndex);
-          setSelectedSize(allSizes[nextAvailableSizeIndex]?.value);
+          setSelectedSize(sizes[nextAvailableSizeIndex]?.value);
         }
       } else {
-        setSelectedSize(allSizes[0]?.value || '');
+        setSelectedSize(sizes[0]?.value || '');
       }
     }
-  }, [allSizes, isOpen]);
+  }, [sizes, isOpen]);
   React.useEffect(() => {
     if (props.salePrice === props.price) {
       setIsSale(false);
@@ -441,7 +447,7 @@ const ItemProduct = (props: IIProduct) => {
                             <div id="variant-swatch-1-qv" className="swatch clearfix">
                               <div className="pro-title">Kích thước: </div>
                               <div className="select-swap">
-                                {allSizes.map((size, i) => (
+                                {sizes.map((size, i) => (
                                   <div
                                     className={`n-sd swatch-element ${size.total === 0 ? 'soldout' : ''}`}
                                     key={i}

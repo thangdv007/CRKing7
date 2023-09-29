@@ -63,7 +63,7 @@ const Login = () => {
           </div>
           <div className="bg-black w-[2px] h-96"></div>
           <div className="py-24 px-10">
-            <h2 className="text-2xl font-semibold mb-2 text-center text-[#2999ff]">Login</h2>
+            <h2 className="text-2xl font-semibold mb-2 text-center text-[#2999ff]">Đăng nhập</h2>
             <div className="mb-4">
               <InputText
                 type="text"

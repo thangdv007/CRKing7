@@ -47,6 +47,8 @@ const Product = () => {
   const [minPrice, setMinPrice] = React.useState();
   const [maxPrice, setMaxPrice] = React.useState();
   const [categoryId, setCategoryId] = React.useState<number>(-1);
+  const [allCategory1, setAllCategry1] = React.useState<Category[]>([]);
+  const [allCategory2, setAllCategry2] = React.useState<Category[]>([]);
   const [allCategory, setAllCategry] = React.useState<Category[]>([]);
   const navigate = useNavigate();
   const [categoriesMapping, setCategoriesMapping] = React.useState({});
@@ -71,13 +73,16 @@ const Product = () => {
   }, []);
   const filterOptions = [
     { id: -1, title: 'Tất Cả' },
-    { id: 1, title: 'Hoạt Động' },
+    { id: -2, title: 'Hoạt Động' },
     { id: 0, title: 'Đã Khóa' },
     ...allCategory,
   ];
   const handleChooseFilter = (item) => {
-    if (item.id === -1 || item.id === 0 || item.id === 1) {
+    if (item.id === -1 || item.id === 0) {
       setStatus(item.id);
+      setCategoryId('');
+    } else if (item.id === -2) {
+      setStatus(1);
       setCategoryId('');
     } else {
       setStatus('');
@@ -97,10 +102,10 @@ const Product = () => {
   const closeModal = () => {
     setIsOpen(false);
   };
-  const getAllCategory = async () => {
+  const getAllCategory = async (id: number) => {
     if (!!token) {
       try {
-        const url = Api.getAllCategoryByParentId(1);
+        const url = Api.getAllCategoryByParentId(id);
         const [res] = await Promise.all([
           REQUEST_API({
             url: url,
@@ -109,8 +114,13 @@ const Product = () => {
           }),
         ]);
         if (res.status) {
-          const category = res.data;
-          setAllCategry(category);
+          if (id === 28) {
+            const category = res.data;
+            setAllCategry1(category);
+          } else if (id === 29) {
+            const category = res.data;
+            setAllCategry2(category);
+          }
         } else {
           toast.error(`Có lỗi xảy ra`, {
             position: 'top-right',
@@ -124,8 +134,12 @@ const Product = () => {
     }
   };
   React.useEffect(() => {
-    getAllCategory();
+    getAllCategory(28);
+    getAllCategory(29);
   }, []);
+  React.useEffect(() => {
+    setAllCategry([...allCategory1, ...allCategory2]);
+  }, [allCategory1, allCategory2]);
   const getAllProduct = async () => {
     if (!!token) {
       try {
@@ -167,15 +181,9 @@ const Product = () => {
           setTotalPage(totalPages);
           setPage(res.data.currentPage);
         } else {
-          setLoading(true);
-          toast.error(`${res.data.data}`, {
-            position: 'top-right',
-            pauseOnHover: false,
-            theme: 'dark',
-          });
+          setProduct([]);
         }
       } catch (error) {
-        setLoading(true);
         console.error(error);
       } finally {
         setLoading(false);

@@ -112,7 +112,7 @@ const DetailOrder = () => {
       <div className="container">
         <div className="wrapbox-content-account">
           <div className="header-page clearfix">
-            <h1>Thông tin địa chỉ</h1>
+            <h1>Thông tin đơn hàng</h1>
           </div>
           <div className="row">
             <LeftPage />

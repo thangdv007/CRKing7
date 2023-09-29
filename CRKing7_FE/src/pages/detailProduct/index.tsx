@@ -269,7 +269,7 @@ const DetailProduct = () => {
   return (
     <div className="mainWrapper--content">
       <div className="layout-productDetail layout-pageProduct">
-        <Breadcrum title={'sản phẩm'} />
+        <Breadcrum title={'Sản phẩm'} />
         {/* temp 01 */}
         <div className="productDetail-information productDetail_style__01">
           <div className="container">

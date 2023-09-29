@@ -22,6 +22,8 @@ const Register = () => {
     try {
       const phoneNumberRegex = /^0[0-9]{9}$/;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const usernameRegex = /^[a-z0-9]{6,15}$/;
+      const passwordRegex = /\s/;
       if (!username) {
         toast.error('Hãy nhập tên tài khoản', {
           position: 'top-right',
@@ -32,6 +34,14 @@ const Register = () => {
       }
       if (!password) {
         toast.error('Hãy nhập mật khẩu', {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        return;
+      }
+      if (!email) {
+        toast.error('Hãy nhập email', {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
@@ -62,16 +72,24 @@ const Register = () => {
         });
         return;
       }
-      if (!email) {
-        toast.error('Hãy nhập email', {
+      if (!otp) {
+        toast.error('Hãy nhập otp', {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
         });
         return;
       }
-      if (!otp) {
-        toast.error('Hãy nhập otp', {
+      if (!usernameRegex.test(username)) {
+        toast.error('Tên tài khoản không được chứa ký tự đặc biệt', {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        return;
+      }
+      if (passwordRegex.test(password)) {
+        toast.error('Mật khẩu không được chứa dấu cách', {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
@@ -131,12 +149,22 @@ const Register = () => {
   };
   const handleGetOtp = async () => {
     try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email) {
         toast.error(`Vui lòng nhập email để lấy otp`, {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
         });
+        return;
+      }
+      if (!emailRegex.test(email)) {
+        toast.error('Email không hợp lệ', {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        setEmail('');
         return;
       }
       const data = {
