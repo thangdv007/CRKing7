@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Api from '~/api/apis';
 import { REQUEST_API } from '~/constants/method';
+import path from '~/constants/path';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
 import { RootState } from '~/redux/reducers';
 import { Category } from '~/types/category.type';
@@ -50,14 +51,14 @@ const DetailProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   React.useEffect(() => {

@@ -10,6 +10,7 @@ import Images from '~/assets';
 import { Category } from '~/types/category.type';
 import { useNavigate } from 'react-router-dom';
 import Editor from '~/components/quill';
+import path from '~/constants/path';
 
 const AddProduct = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -151,6 +152,12 @@ const AddProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
     }
@@ -294,6 +301,12 @@ const AddProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
     }

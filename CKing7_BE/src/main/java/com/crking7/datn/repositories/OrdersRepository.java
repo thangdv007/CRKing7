@@ -33,7 +33,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT o FROM Orders o WHERE o.codeOrders LIKE %:keyword% AND (:status IS NULL OR o.status = :status) " +
             "AND (:isCheckout IS NULL OR o.isCheckout = :isCheckout) " +
             "AND (:startDate IS NULL OR o.modifiedDate >= :startDate) " +
-            "AND (:endDate IS NULL OR o.modifiedDate <= :endDate)")
+            "AND (:endDate IS NULL OR o.modifiedDate <= :endDate) " +
+            "AND o.type = 1")
     Page<Orders> getAllByStatus(@Param("keyword") String keyword,
                                 @Param("status") Integer status,
                                 @Param("isCheckout") Boolean isCheckout,

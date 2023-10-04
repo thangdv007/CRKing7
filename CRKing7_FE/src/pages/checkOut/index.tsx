@@ -17,6 +17,7 @@ import cartApi from '~/apis/cart.apis';
 import paymentMethodApi from '~/apis/paymentMethod.apis';
 import { REQUEST_API } from '~/constants/method';
 import { Address } from '~/types/address.type';
+import LoadingPage from '~/components/loadingPage';
 
 const CheckOut = () => {
   const user: User = useSelector((state: RootState) => state.AuthReducer.user);
@@ -417,6 +418,13 @@ const CheckOut = () => {
       });
     }
   }, [addresses]);
+  const handleUseDiscount = () => {
+    toast.error(`Tính năng đang phát triển`, {
+      position: 'top-right',
+      pauseOnHover: false,
+      theme: 'dark',
+    });
+  };
   return (
     <div className="flexbox check-out">
       {/* nút bấm mobile */}
@@ -474,37 +482,32 @@ const CheckOut = () => {
                     className="order-summary-section order-summary-section-discount"
                     data-order-summary-section="discount"
                   >
-                    <form id="form_discount_add" acceptCharset="UTF-8" method="post">
-                      <input name="utf8" type="hidden" defaultValue="✓" />
+                    <div>
                       <div className="fieldset">
                         <div className="field  ">
                           <div className="field-input-btn-wrapper">
                             <div className="field-input-wrapper">
-                              <label className="field-label" htmlFor="discount.code">
-                                Mã giảm giá
-                              </label>
+                              <label className="field-label">Mã giảm giá</label>
                               <input
                                 placeholder="Mã giảm giá"
                                 className="field-input"
-                                data-discount-field="true"
                                 autoComplete="false"
                                 autoCapitalize="off"
                                 spellCheck="false"
                                 size={30}
                                 type="text"
-                                id="discount.code"
-                                name="discount.code"
-                                defaultValue=""
                               />
                             </div>
-                            <button type="submit" className="field-input-btn btn btn-default btn-disabled">
+                            <button
+                              className="field-input-btn btn btn-default btn-disabled"
+                              onClick={handleUseDiscount}
+                            >
                               <span className="btn-content">Sử dụng</span>
-                              <i className="btn-spinner icon icon-button-spinner" />
                             </button>
                           </div>
                         </div>
                       </div>
-                    </form>
+                    </div>
                     <span className="coupon-notification">
                       Mã giảm giá không áp dụng đồng thời chương trình khuyến mãi khác
                     </span>
@@ -591,14 +594,12 @@ const CheckOut = () => {
                     className="order-summary-section order-summary-section-discount"
                     data-order-summary-section="discount"
                   >
-                    <form id="form_discount_add">
+                    <div>
                       <div className="fieldset">
                         <div className="field  ">
                           <div className="field-input-btn-wrapper">
                             <div className="field-input-wrapper">
-                              <label className="field-label" htmlFor="discount.code">
-                                Mã giảm giá
-                              </label>
+                              <label className="field-label">Mã giảm giá</label>
                               <input
                                 placeholder="Mã giảm giá"
                                 className="field-input"
@@ -608,19 +609,18 @@ const CheckOut = () => {
                                 spellCheck="false"
                                 size={30}
                                 type="text"
-                                id="discount.code"
-                                name="discount.code"
-                                defaultValue=""
                               />
                             </div>
-                            <button type="submit" className="field-input-btn btn btn-default btn-disabled">
+                            <button
+                              className="field-input-btn btn btn-default btn-disabled"
+                              onClick={handleUseDiscount}
+                            >
                               <span className="btn-content">Sử dụng</span>
-                              <i className="btn-spinner icon icon-button-spinner" />
                             </button>
                           </div>
                         </div>
                       </div>
-                    </form>
+                    </div>
                     <span className="coupon-notification">
                       Mã giảm giá không áp dụng đồng thời chương trình khuyến mãi khác
                     </span>
@@ -1025,16 +1025,8 @@ const CheckOut = () => {
                 {/* nút bấm */}
                 <div className="step-footer" id="step-footer-checkout">
                   <div>
-                    <button
-                      type="submit"
-                      className={`step-footer-continue-btn btn ${isLoading ? 'btn-loading' : ''}`}
-                      onClick={handlePayOrder}
-                    >
-                      {isLoading ? (
-                        <i className="btn-spinner icon icon-button-spinner" />
-                      ) : (
-                        <span className="btn-content">Hoàn tất đơn hàng</span>
-                      )}
+                    <button type="submit" className="step-footer-continue-btn btn" onClick={handlePayOrder}>
+                      <span className="btn-content">Hoàn tất đơn hàng</span>
                     </button>
                   </div>
                   <Link className="step-footer-previous-link" to={path.cart} onClick={() => navigate(path.cart)}>
@@ -1048,6 +1040,7 @@ const CheckOut = () => {
           </div>
         </div>
       </div>
+      {isLoading && <LoadingPage />}
     </div>
   );
 };

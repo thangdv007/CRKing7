@@ -53,6 +53,7 @@ const Home = () => {
   }, []);
   //getcategory
   const [category1, setCategory1] = React.useState<Category[]>([]);
+
   const [category2, setCategory2] = React.useState<Category[]>([]);
   const getCategory = async (id: number) => {
     try {
@@ -164,7 +165,7 @@ const Home = () => {
   React.useEffect(() => {
     if (category.length > 0) {
       if (activeCategoryId === null || !category.find((item) => item.id === activeCategoryId)) {
-        setActiveCategoryId(category[0].id);
+        setActiveCategoryId(1);
       }
     }
   }, [category]);

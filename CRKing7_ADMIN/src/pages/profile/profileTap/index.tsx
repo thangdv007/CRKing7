@@ -6,11 +6,13 @@ import { RootState } from '~/redux/reducers';
 import { toast } from 'react-toastify';
 import { User } from '~/types/user.type';
 import provinceApi from '~/api/province.apis';
+import path from '~/constants/path';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileTap = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const userId = useSelector((state: RootState) => state.ReducerAuth.user);
-
+  const navigate = useNavigate();
   const [user, setUser] = useState<User>();
 
   const viewDetail = async () => {
@@ -34,6 +36,12 @@ const ProfileTap = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
     }

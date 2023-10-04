@@ -50,6 +50,7 @@ const App = () => {
         pauseOnHover: false,
         theme: 'dark',
       });
+      <Navigate to={path.login} />;
     }
   };
   React.useEffect(() => {

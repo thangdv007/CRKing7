@@ -292,7 +292,7 @@ public class OrdersServiceImpl implements OrdersService {
             Date date = new Date();
             ordersMapper.updateModel(orders, ordersRequest);
             orders.setOrderItems(orderItemList);
-            orders.setType(Constants.ORDERS_TYPE);//xét là đơn hàng
+
             orders.setCreateDate(date);
             orders.setOrderDate(date);
             orders.setModifiedDate(date);
@@ -307,6 +307,7 @@ public class OrdersServiceImpl implements OrdersService {
             } else {
                 //nếu đã thanh toán online thì satus là 2 chưa thì là 1
                 orders.setStatus(Constants.PENDING_STATUS);
+                orders.setType(Constants.ORDERS_TYPE);//xét là đơn hàng
                 orders.setIsCheckout(false);
                 orders.setPaymentMethod("COD");
                 ordersRepository.save(orders);
@@ -630,11 +631,13 @@ public class OrdersServiceImpl implements OrdersService {
     public Long getTotalSoldProducts() {
         return ordersRepository.totalSoldProducts();
     }
+
     //Tổng thu nhập
     @Override
     public Long totalInCome() {
         return ordersRepository.totalInCome();
     }
+
     //Tổng đơn hàng chưa được xử lý
     @Override
     public Long totalOrderNoProcess() {

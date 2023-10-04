@@ -11,6 +11,7 @@ import { Category } from '~/types/category.type';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Product, ProductImages } from '~/types/product.type';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
+import path from '~/constants/path';
 
 const EditProduct = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -176,14 +177,14 @@ const EditProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   React.useEffect(() => {
@@ -215,6 +216,12 @@ const EditProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.log(error);
       }
     }
@@ -352,14 +359,14 @@ const EditProduct = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
-    } else {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
     }
   };
   const getProduct = async () => {

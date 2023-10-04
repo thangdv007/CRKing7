@@ -5,10 +5,14 @@ import Api from '~/api/apis';
 import LoadingPage from '~/components/loadingPage';
 import { REQUEST_API } from '~/constants/method';
 import { RootState } from '~/redux/reducers';
+import { toast } from 'react-toastify';
 
 import './styles.css';
+import { useNavigate } from 'react-router-dom';
+import path from '~/constants/path';
 
 const Analytics = () => {
+  const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const themeReducer = useSelector((state: RootState) => state.ThemeReducer.mode);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -49,6 +53,12 @@ const Analytics = () => {
           }
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       } finally {
         setIsLoading(false);

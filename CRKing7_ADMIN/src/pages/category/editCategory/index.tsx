@@ -143,9 +143,9 @@ const EditCategory = () => {
           pauseOnHover: false,
           theme: 'dark',
         });
+        navigate(path.login);
         console.error(error);
       }
-    } else {
     }
   };
   const getCategory = async () => {
@@ -176,6 +176,7 @@ const EditCategory = () => {
           pauseOnHover: false,
           theme: 'dark',
         });
+        navigate(path.login);
         console.error(error);
       }
     } else {

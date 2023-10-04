@@ -1,5 +1,6 @@
 package com.crking7.datn.controller;
 
+import com.crking7.datn.config.Constants;
 import com.crking7.datn.config.VnpayConfig;
 import com.crking7.datn.helper.ApiResponse;
 import com.crking7.datn.models.OrderItem;
@@ -141,6 +142,7 @@ public class VnPayController {
             // "00" là mã trả về cho thanh toán thành công
             orders.setIsCheckout(true);
             orders.setPaymentMethod("vnPay");
+            orders.setType(Constants.ORDERS_TYPE);//xét là đơn hàng
             // Lưu thông tin vào cơ sở dữ liệu
             ordersRepository.save(orders);
             return new ResponseEntity<>(ApiResponse.build(200, true, "Thành công" , response), HttpStatus.OK);

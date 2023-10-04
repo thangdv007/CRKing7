@@ -138,7 +138,12 @@ const Order = () => {
           setIsNone(true);
         }
       } catch (error) {
-        setLoading(true);
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       } finally {
         setLoading(false);
@@ -266,7 +271,6 @@ const Order = () => {
   };
   return (
     <div className="">
-      {loadding && <LoadingPage />}
       <div className="flex justify-between items-center">
         <div className="flex items-center">
           <span className="text-base font-bold">Quản lý đơn hàng</span>

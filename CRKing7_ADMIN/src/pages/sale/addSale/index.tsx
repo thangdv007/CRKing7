@@ -8,6 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Api from '~/api/apis';
 import { REQUEST_API } from '~/constants/method';
 import { formatDate } from '~/constants/formatDate';
+import path from '~/constants/path';
 
 const AddSale = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -83,6 +84,12 @@ const AddSale = () => {
           });
         }
       } catch (error) {
+        toast.error(`Vui lòng đăng nhập lại`, {
+          position: 'top-right',
+          pauseOnHover: false,
+          theme: 'dark',
+        });
+        navigate(path.login);
         console.error(error);
       }
     }

@@ -1,5 +1,6 @@
 package com.crking7.datn.controller;
 
+import com.crking7.datn.config.Constants;
 import com.crking7.datn.config.ZaloPayConfig;
 import com.crking7.datn.models.OrderItem;
 import com.crking7.datn.models.Orders;
@@ -158,7 +159,7 @@ public class ZaloPayPaymentController {
             // 1 là mã trả về cho thanh toán thành công
             orders.setIsCheckout(true);
             orders.setPaymentMethod("ZaloPay");
-
+            orders.setType(Constants.ORDERS_TYPE);//xét là đơn hàng
             // Lưu thông tin vào cơ sở dữ liệu
             ordersRepository.save(orders);
         }
