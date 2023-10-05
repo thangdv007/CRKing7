@@ -12,7 +12,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Editor from '~/components/quill';
 import { Article } from '~/types/article.type';
 import { API_URL_IMAGE } from '~/constants/utils';
-import path from '~/constants/path';
 
 const EditArticle = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -72,14 +71,14 @@ const EditArticle = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
+    } else {
+      toast.error(`Vui lòng đăng nhập lại`, {
+        position: 'top-right',
+        pauseOnHover: false,
+        theme: 'dark',
+      });
     }
   };
   const getArticle = async () => {
@@ -196,12 +195,6 @@ const EditArticle = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }

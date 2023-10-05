@@ -9,7 +9,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { API_URL_IMAGE } from '~/constants/utils';
 import { Category } from '~/types/category.type';
 import { User } from '~/types/user.type';
-import path from '~/constants/path';
 
 const DetailArticle = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
@@ -68,12 +67,6 @@ const DetailArticle = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }

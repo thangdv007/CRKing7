@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Api from '~/api/apis';
 import { REQUEST_API } from '~/constants/method';
 import { RootState } from '~/redux/reducers';
@@ -8,11 +8,9 @@ import { toast } from 'react-toastify';
 import { Sale } from '~/types/sale.type';
 import { Product } from '~/types/product.type';
 import { API_URL_IMAGE, formatPrice } from '~/constants/utils';
-import path from '~/constants/path';
 
 const DetailSale = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const item = location.state.item;
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const [sale, setSale] = React.useState<Sale>();
@@ -40,12 +38,6 @@ const DetailSale = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }

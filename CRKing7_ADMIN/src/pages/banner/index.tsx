@@ -125,12 +125,6 @@ const Banners = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         setLoading(true);
         console.error(error);
       } finally {
@@ -211,12 +205,6 @@ const Banners = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }
@@ -247,12 +235,6 @@ const Banners = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }
@@ -286,12 +268,6 @@ const Banners = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }

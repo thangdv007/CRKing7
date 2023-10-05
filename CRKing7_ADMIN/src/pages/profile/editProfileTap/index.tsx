@@ -88,12 +88,11 @@ const EditProfile = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
+        toast.error('Lỗi', {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
         });
-        navigate(path.login);
         console.error(error);
       }
     }

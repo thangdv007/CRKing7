@@ -138,12 +138,6 @@ const Order = () => {
           setIsNone(true);
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       } finally {
         setLoading(false);

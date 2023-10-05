@@ -6,16 +6,15 @@ import { REQUEST_API } from '~/constants/method';
 import { toast } from 'react-toastify';
 import { RootState } from '~/redux/reducers';
 import { City, District, Ward } from '~/types/province.type';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Order, OrderItem } from '~/types/order.type';
-import path from '~/constants/path';
 
 const EditOrder = () => {
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const user = useSelector((state: RootState) => state.ReducerAuth.user);
   const location = useLocation();
   const id = location.state;
-  const navigate = useNavigate();
+
   const [fullName, setFullName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [note, setNote] = React.useState('');
@@ -129,12 +128,6 @@ const EditOrder = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }
@@ -248,12 +241,6 @@ const EditOrder = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }

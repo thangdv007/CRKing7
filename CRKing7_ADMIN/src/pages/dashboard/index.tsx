@@ -1,7 +1,7 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Badge from '~/components/badge';
 import StatusCard from '~/components/statuscard';
 import { RootState } from '~/redux/reducers';
@@ -27,7 +27,6 @@ interface IOrderByMonth {
   status: number;
 }
 const Dashboard = () => {
-  const navigate = useNavigate();
   const themeReducer = useSelector((state: RootState) => state.ThemeReducer.mode);
   const token = useSelector((state: RootState) => state.ReducerAuth.token);
   const [countOrders, setCountOrders] = React.useState();
@@ -63,12 +62,6 @@ const Dashboard = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       } finally {
         setIsLoading(false);

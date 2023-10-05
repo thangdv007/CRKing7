@@ -65,12 +65,6 @@ const AddCategory = () => {
           setParentCategory(res.data);
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     } else {
@@ -126,12 +120,11 @@ const AddCategory = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
+        toast.error(`Có lỗi xảy ra`, {
           position: 'top-right',
           pauseOnHover: false,
           theme: 'dark',
         });
-        navigate(path.login);
         console.error(error);
       }
     }

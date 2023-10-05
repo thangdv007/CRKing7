@@ -14,7 +14,6 @@ import { formatDate } from '~/constants/formatDate';
 import provinceApi from '~/api/province.apis';
 import { City, District, Ward } from '~/types/province.type';
 import LoadingPage from '~/components/loadingPage';
-import path from '~/constants/path';
 
 const customStyles = {
   content: {
@@ -111,12 +110,6 @@ const DetailOrder = () => {
           });
         }
       } catch (error) {
-        toast.error(`Vui lòng đăng nhập lại`, {
-          position: 'top-right',
-          pauseOnHover: false,
-          theme: 'dark',
-        });
-        navigate(path.login);
         console.error(error);
       }
     }
@@ -345,12 +338,6 @@ const DetailOrder = () => {
         await handleSuccess();
       }
     } catch (error) {
-      toast.error(`Vui lòng đăng nhập lại`, {
-        position: 'top-right',
-        pauseOnHover: false,
-        theme: 'dark',
-      });
-      navigate(path.login);
       console.log(error);
     } finally {
       setIsLoading(false);
